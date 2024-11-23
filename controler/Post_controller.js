@@ -22,7 +22,7 @@ const add_post = asyncWrapper(
         }
 
         const newPost = new Post({
-            photo: req.file.filename,
+            photo: req.file ? req.file.filename : null,
             content,
             user: userId,
         });

@@ -15,7 +15,6 @@ router.route('/my_profile')
 
 
 router.route('/my_profile/:post_id')
-    .get(vrifytoken, post_controler.my_profile)
     .patch(upload.single('photo'), vrifytoken, post_controler.update_post);
 
 

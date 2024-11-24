@@ -32,6 +32,7 @@ const user_register = asyncWrapper(
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
+        const userPhoto = req.file ? req.file.filename : '../uploads/Profile_photo/profile.jpg';
 
         const new_user = new User({
             firstName,
@@ -40,7 +41,7 @@ const user_register = asyncWrapper(
             birthDate: validDate,
             email,
             password: hashedPassword,
-            photo: req.file.filename,
+            photo: userPhoto,
         });
         const token =  await generateToken({email: new_user.email, id: new_user._id});
         await new_user.save();

@@ -22,6 +22,7 @@ const add_post = asyncWrapper(
         }
 
         const newPost = new Post({
+            user_id : userId,
             photo: req.file ? req.file.filename : null,
             content,
             user: userId,
@@ -68,18 +69,41 @@ const get_all_post = asyncWrapper(
 // my_profile -> my_data and my_posts
 const my_profile = asyncWrapper(
     async (req, res, next) => {
-        const my_posts = await User.findOne({ email: req.user.email },{"__v" : false, "password" : false}).populate('posts', '-__v -_id ');
+        
+
+        const { page = 1, page_size = 5 } = req.query;
+        const skip  = (page - 1) * page_size;
+
+        const user = await User.findOne(
+            { email: req.user.email },
+            { "__v": false, "password": false }
+        )
+        .populate({
+                path: 'posts',
+                select: '-__v -_id',
+                options: {
+                    skip: skip,
+                    limit: page_size,
+                    sort: { updated_at: -1 },
+                },
+            });
+
+        const totalPosts = await Post.countDocuments({ user_id : user._id });
+        // console.log(totalPosts);
+        const hasMore = skip + page_size < totalPosts;
+
         res.status(200).json({
             status: httpstatus.SUCCESS,
-            data:{
-                user_name : my_posts.firstName +" "+ my_posts.lastName,
-                sex : my_posts.sex,
-                my_photo : my_posts.photo,
-                birthDate : my_posts.birthDate,
-                email : my_posts.email,
-                posts : my_posts.posts,
-            }
-        });
+            data: {
+                user_name: user.firstName + " " + user.lastName,
+                sex: user.sex,
+                my_photo: user.photo,
+                birthDate: user.birthDate,
+                email: user.email,
+                posts: user.posts,
+                hasMore,
+            },
+            });
 });
 
 

@@ -15,6 +15,7 @@ router.route('/my_profile')
 
 
 router.route('/my_profile/:post_id')
+    .delete(vrifytoken, post_controler.delete_post)
     .patch(upload.single('photo'), vrifytoken, post_controler.update_post);
 
 

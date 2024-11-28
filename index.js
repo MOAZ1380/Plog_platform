@@ -6,6 +6,8 @@ const path = require('path');
 
 const user_router = require('./routes/users_route');
 const post_router = require('./routes/posts_route');
+const like_router = require('./routes/likes.route');
+
 const http_status = require('./utils/http_status');
 
 
@@ -26,6 +28,7 @@ app.use(cors());
 
 app.use('/api/users', user_router);   // /api/users/.....
 app.use('/api/posts', post_router);   // /api/posts/....
+app.use('/api/posts', like_router);
 
 app.all('*', (req, res, next) => {       // if The page is not found in route.
     res.json({status : http_status.ERROR, message : 'this resource is not available'});

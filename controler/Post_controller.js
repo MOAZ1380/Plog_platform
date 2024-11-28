@@ -40,9 +40,6 @@ const add_post = asyncWrapper(
         });
 });
 
-
-
-
 // main page To browse all pages
 const get_all_post = asyncWrapper(
     async (req, res, next) => {
@@ -61,10 +58,6 @@ const get_all_post = asyncWrapper(
             data: posts,
         });
 });
-
-
-
-
 
 // my_profile -> my_data and my_posts
 const my_profile = asyncWrapper(
@@ -107,12 +100,7 @@ const my_profile = asyncWrapper(
 });
 
 
-
-
-
-
-
-// update_post
+// update_post from my_profile
 const update_post = asyncWrapper(
     async (req, res, next) => {
         const { content } = req.body;
@@ -140,6 +128,29 @@ const update_post = asyncWrapper(
 });
 
 
+// delete_post from my_profile
+const delete_post = asyncWrapper(
+    async (req, res, next) => {
+        const { post_id }= req.params;
+        const user = await User.findById(req.user.id);
+
+        const post_delete = await Post.findOneAndDelete({ _id : post_id });
+        if (!post_delete) {
+            let error = AppError.create("Post not found", 404, httpstatus.FAIL);
+            return next(error);
+        }
+
+        user.posts = user.posts.filter((id) => id.toString() !== post_id);
+        await user.save();
+
+        res.status(200).json({
+            message: "Post deleteds successfully",
+            status_code: 200,
+            status_text: httpstatus.SUCCESS,
+            deletePost: post_delete,
+        });
+});
+
 
 
 
@@ -148,4 +159,5 @@ module.exports = {
     get_all_post,
     my_profile,
     update_post,
+    delete_post,
 }

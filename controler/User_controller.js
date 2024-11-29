@@ -12,7 +12,7 @@ const httpstatus = require('../utils/http_status');
 
 const user_register = asyncWrapper(
     async (req, res, next) => {
-        const { firstName, lastName, sex, birthDate, email, password} = req.body;
+        const { firstName, lastName, sex, birthDate, email, password } = req.body;
 
         if (!validator.isEmail(email)) {
             let error = AppError.create("Invalid email",  400, httpstatus.FAIL);

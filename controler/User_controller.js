@@ -7,9 +7,6 @@ const AppError = require('../utils/AppError')
 const httpstatus = require('../utils/http_status');
 
 
-
-
-
 const user_register = asyncWrapper(
     async (req, res, next) => {
         const { firstName, lastName, sex, birthDate, email, password } = req.body;
@@ -51,11 +48,6 @@ const user_register = asyncWrapper(
             data: { user: new_user , my_token: token},
         });
 });
-
-
-
-
-
 
 const user_login = asyncWrapper(
     async(req, res, next) => {

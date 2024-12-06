@@ -5,7 +5,7 @@ const AppError = require('../utils/AppError')
 const httpstatus = require('../utils/http_status');
 
 
-// main page to add post
+// main and my_profile page to add post 
 const add_post = asyncWrapper(
     async (req, res, next) => {
         const { content } = req.body;
@@ -99,55 +99,43 @@ const my_profile = asyncWrapper(
             });
 });
 
-
-// update_post from my_profile
+// update_post from my_profile and main
 const update_post = asyncWrapper(
     async (req, res, next) => {
         const { content } = req.body;
-        const { post_id }= req.params;
 
-        const post = await Post.findById(post_id);
-        if (!post) {
-            let error = AppError.create("Post not found", 404, httpstatus.FAIL);
-            return next(error);
-        }
 
-        if (content) post.content = content;
-        if (req.file) post.photo = req.file.filename; 
+        if (content) req.post.content = content;
+        if (req.file) req.post.photo = req.file.filename; 
 
-        post.updated_at = Date.now();
+        req.post.updated_at = Date.now();
 
-        await post.save();
+        await req.post.save();
 
         res.status(200).json({
             message: "Post updated successfully",
             status_code: 200,
             status_text: httpstatus.SUCCESS,
-            updatedPost: post,
+            updatedPost: req.post,
         });
 });
 
 
-// delete_post from my_profile
+// delete_post from my_profile and main
 const delete_post = asyncWrapper(
     async (req, res, next) => {
-        const { post_id }= req.params;
         const user = await User.findById(req.user.id);
 
-        const post_delete = await Post.findOneAndDelete({ _id : post_id });
-        if (!post_delete) {
-            let error = AppError.create("Post not found", 404, httpstatus.FAIL);
-            return next(error);
-        }
+        await req.post.deleteOne();
 
-        user.posts = user.posts.filter((id) => id.toString() !== post_id);
+        user.posts = user.posts.filter((id) => id.toString() !== req.post._id.toString());
         await user.save();
 
         res.status(200).json({
             message: "Post deleteds successfully",
             status_code: 200,
             status_text: httpstatus.SUCCESS,
-            deletePost: post_delete,
+            deletePost: req.post,
         });
 });
 

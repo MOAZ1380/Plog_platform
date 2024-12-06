@@ -275,6 +275,7 @@ This endpoint displays the user's personal data and their posts.
 ### **4. Update Post**
 
 **Endpoint**: `patch /api/posts/my_profile/:post_id`
+**Endpoint**: `patch /api/posts/main/:post_id`
 
 This endpoint is used to update an existing post.
 
@@ -304,15 +305,26 @@ This endpoint is used to update an existing post.
       "status": "FAIL",
       "message": "Post not found"
     }
-    ```
+    
+    
+- **403 Unauthorized**: If he tries to access a post that is not his
+  - Example:
+    ```json
+    {
+      "status": "FAIL",
+      "message": "Unauthorized action"
+    }
+    ````
 
 ---
 
 ### **5. Delete Post**
 
 **Endpoint**: `DELETE /api/posts/my_profile/:post_id`
+              DELETE /api/posts/main/:post_id
 
 This endpoint is used to delete a post.
+First, verify that the post belongs to him.
 
 #### Input:
 - `post_id`: ID of the post to delete.
@@ -338,6 +350,17 @@ This endpoint is used to delete a post.
     {
       "status": "FAIL",
       "message": "Post not found"
+    }
+    ```
+
+
+
+- **403 Unauthorized**: If he tries to access a post that is not his
+  - Example:
+    ```json
+    {
+      "status": "FAIL",
+      "message": "Unauthorized action"
     }
     ```
 

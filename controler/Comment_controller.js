@@ -5,7 +5,7 @@ const asyncWrapper = require('../middleware/asyncWrapper');
 const AppError = require('../utils/AppError');
 const httpstatus = require('../utils/http_status');
 
-// main and my_profile page to add like
+// main and my_profile page to add comment
 const add_comment = asyncWrapper(
     async (req, res, next) => {
         const userId = req.user.id;
@@ -37,7 +37,7 @@ const add_comment = asyncWrapper(
     }
 );
 
-// main and my_profile page to remove like
+// main and my_profile page to update comment
 const update_comment = asyncWrapper(
     async (req, res, next) => {
         const userId = req.user.id;
@@ -74,7 +74,43 @@ const update_comment = asyncWrapper(
     }
 );
 
+
+
+// main and my_profile page to remove comment
+const delete_comment = asyncWrapper(
+    async (req, res, next) => {
+        const userId = req.user.id;
+
+        const post = await Post.findById(req.params.id);
+        if (!post) {
+            return next(new AppError('Post not found', 404, httpstatus.FAIL));
+        }
+
+        const comment = await Comment.findById(req.params.commentId);
+        if (!comment) {
+            return next(new AppError('Comment not found', 404, httpstatus.FAIL));
+        }
+
+        if (comment.user_id.toString() !== userId.toString()) {
+            return next(new AppError('You are not authorized to delete this comment', 403, httpstatus.FAIL));
+        }
+
+        await Comment.findByIdAndDelete(req.params.commentId);
+
+        post.comments = post.comments.filter(commentId => commentId.toString() !== req.params.commentId);
+
+        await post.save();
+
+        return res.json({
+            status: httpstatus.SUCCESS,
+            message: "Comment deleted successfully",
+            data: post.comments
+        });
+    }
+);
+
 module.exports = {
     add_comment,
-    update_comment
+    update_comment,
+    delete_comment,
 };

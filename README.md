@@ -130,41 +130,9 @@ JWT (JSON Web Token) is used for authentication. After a successful login or reg
 
 The `AppError` module is used to manage errors across the application. Error responses include a status code, error message, and appropriate HTTP status.
 
-## **Usage Example**
+---
 
-### **User Registration**
-
-```bash
-POST /api/users/register
-Content-Type: application/json
-
-{
-  "firstName": "John",
-  "lastName": "Doe",
-  "sex": "male",
-  "birthDate": "1990-01-01",
-  "email": "john.doe@example.com",
-  "password": "password123",
-  "photo": "image.jpg"
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# API Documentation
+# Post API Documentation
 
 ## Overview
 
@@ -180,7 +148,6 @@ This endpoint is used to add a new post. The user must send the content of the p
 
 #### Input:
 - `content`: Content of the post (Required, between 1 and 5000 characters).
-- `photo`: Image for the post (Optional).
 
 #### Response:
 - **201 Created**: If the post is successfully added.
@@ -192,7 +159,6 @@ This endpoint is used to add a new post. The user must send the content of the p
         "post": {
           "user_id": "user_id_here",
           "content": "Post content here",
-          "photo": "image_filename.jpg"
         }
       }
     }
@@ -274,14 +240,13 @@ This endpoint displays the user's personal data and their posts.
 
 ### **4. Update Post**
 
-**Endpoint**: `patch /api/posts/my_profile/:post_id`
-**Endpoint**: `patch /api/posts/main/:post_id`
+**Endpoint**: `PATCH /api/posts/my_profile/:post_id`
+**Endpoint**: `PATCH /api/posts/main/:post_id`
 
 This endpoint is used to update an existing post.
 
 #### Input:
 - `content`: New content for the post (Optional).
-- `photo`: New image for the post (Optional).
 
 #### Response:
 - **200 OK**: If the post is updated successfully.
@@ -293,7 +258,6 @@ This endpoint is used to update an existing post.
       "updatedPost": {
         "user_id": "user_id_here",
         "content": "Updated post content",
-        "photo": "updated_image.jpg"
       }
     }
     ```
@@ -305,26 +269,25 @@ This endpoint is used to update an existing post.
       "status": "FAIL",
       "message": "Post not found"
     }
-    
-    
-- **403 Unauthorized**: If he tries to access a post that is not his
+    ```
+
+- **403 Unauthorized**: If the user tries to access a post that is not theirs.
   - Example:
     ```json
     {
       "status": "FAIL",
       "message": "Unauthorized action"
     }
-    ````
+    ```
 
 ---
 
 ### **5. Delete Post**
 
 **Endpoint**: `DELETE /api/posts/my_profile/:post_id`
-              DELETE /api/posts/main/:post_id
+**Endpoint**: `DELETE /api/posts/main/:post_id`
 
-This endpoint is used to delete a post.
-First, verify that the post belongs to him.
+This endpoint is used to delete a post. It first verifies that the post belongs to the user.
 
 #### Input:
 - `post_id`: ID of the post to delete.
@@ -339,7 +302,6 @@ First, verify that the post belongs to him.
       "deletePost": {
         "user_id": "user_id_here",
         "content": "Post content to delete",
-        "photo": "image_to_delete.jpg"
       }
     }
     ```
@@ -353,9 +315,7 @@ First, verify that the post belongs to him.
     }
     ```
 
-
-
-- **403 Unauthorized**: If he tries to access a post that is not his
+- **403 Unauthorized**: If the user tries to access a post that is not theirs.
   - Example:
     ```json
     {
@@ -366,6 +326,201 @@ First, verify that the post belongs to him.
 
 ---
 
-## **Error Handling**
+# Like and Comment API Documentation 
 
-The `AppError` module is used in this project to return appropriate error messages. In case of an error, the response will inclu
+## Overview
+
+This section describes the Like and Comment functionality in the system.
+
+## Endpoints
+
+### **1. Add a Like**
+
+**Endpoint**: `POST /main/:id/like`
+
+This route allows a user to add a like to a post. 
+
+#### Request Body:
+None required. The user is authenticated via the token.
+
+#### Response:
+- **200 OK**: If the like is added successfully.
+  - Example:
+    ```json
+    {
+      "status": "SUCCESS",
+      "message": "Post liked"
+    }
+    ```
+
+- **403 Unauthorized**: If the user is not logged in.
+  - Example:
+    ```json
+    {
+      "status": "FAIL",
+      "message": "User not logged in"
+    }
+    ```
+
+---
+### **2. remove a Like**
+
+**Endpoint**: `POST /main/:id/unlike`
+
+This route allows a user to remove a like to a post. 
+
+#### Request Body:
+None required. The user is authenticated via the token.
+
+#### Response:
+- **200 OK**: If the unlike is removed successfully.
+  - Example:
+    ```json
+    {
+      "status": "SUCCESS",
+      "message": "Like removed successfully"
+    }
+    ```
+
+- **403 Unauthorized**: If the user is not logged in.
+  - Example:
+    ```json
+    {
+      "status": "FAIL",
+      "message": "User not logged in"
+    }
+    ```
+
+---
+
+### **3. Comment on a Post**
+
+**Endpoint**: `POST /main/:id/comment`
+
+This endpoint allows a user to comment on a post.
+
+#### Input:
+- `comment`: The comment text.
+
+#### Response:
+- **201 Created**: If the comment is successfully created.
+  - Example:
+    ```json
+    {
+      "status": "SUCCESS",
+      "message": "Comment added",
+      "data": {
+        "comment": "Nice post!",
+        "user_id": "user_id_here"
+      }
+    }
+    ```
+
+- **400 Bad Request**: If the comment is empty.
+  - Example:
+    ```json
+    {
+      "status": "FAIL",
+      "message": "Comment cannot be empty"
+    }
+    ```
+
+--- 
+Thank you for the clarification! Here are the updated routes for **editing** and **deleting** comments, written in English:
+
+---
+
+### **4. Edit Comment**
+
+**Endpoint**: `PATCH /main/:post_id/comment/:comment_id`
+
+This endpoint allows the user to edit a comment that they have previously posted on a particular post.
+
+#### Input:
+- `comment`: The new text for the comment.
+
+#### Response:
+- **200 OK**: If the comment is successfully edited.
+  - Example:
+    ```json
+    {
+      "status": "SUCCESS",
+      "message": "Comment edited successfully",
+      "data": {
+        "comment": "New comment text",
+        "user_id": "user_id_here"
+      }
+    }
+    ```
+
+- **400 Bad Request**: If the comment text is empty.
+  - Example:
+    ```json
+    {
+      "status": "FAIL",
+      "message": "Comment cannot be empty"
+    }
+    ```
+
+- **404 Not Found**: If the comment is not found.
+  - Example:
+    ```json
+    {
+      "status": "FAIL",
+      "message": "Comment not found"
+    }
+    ```
+
+- **403 Unauthorized**: If the user tries to edit a comment they do not own.
+  - Example:
+    ```json
+    {
+      "status": "FAIL",
+      "message": "You are not authorized to edit this comment"
+    }
+    ```
+
+---
+
+### **5. Delete Comment**
+
+**Endpoint**: `DELETE /main/:post_id/comment/:comment_id`
+
+This endpoint allows the user to delete a comment they have previously posted on a particular post.
+
+#### Input:
+- `comment_id`: The ID of the comment to be deleted.
+
+#### Response:
+- **200 OK**: If the comment is successfully deleted.
+  - Example:
+    ```json
+    {
+      "status": "SUCCESS",
+      "message": "Comment deleted successfully",
+      "deletedComment": {
+        "comment": "Deleted comment text",
+        "user_id": "user_id_here"
+      }
+    }
+    ```
+
+- **404 Not Found**: If the comment is not found.
+  - Example:
+    ```json
+    {
+      "status": "FAIL",
+      "message": "Comment not found"
+    }
+    ```
+
+- **403 Unauthorized**: If the user tries to delete a comment they do not own.
+  - Example:
+    ```json
+    {
+      "status": "FAIL",
+      "message": "You are not authorized to delete this comment"
+    }
+    ```
+
+---

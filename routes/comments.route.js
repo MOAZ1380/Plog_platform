@@ -13,9 +13,11 @@ router.route('/my_profile/:id/comment')
 
 
 router.route('/main/:id/comment/:commentId')
-    .patch(vrifytoken, Comment_controler.update_comment);
+    .patch(vrifytoken, Comment_controler.update_comment)
+    .delete(vrifytoken, Comment_controler.delete_comment);
 
 router.route('/my_profile/:id/comment/:commentId')
-    .patch(vrifytoken, Comment_controler.update_comment);
+    .patch(vrifytoken, Comment_controler.update_comment)
+    .delete(vrifytoken, Comment_controler.delete_comment);
 
 module.exports = router;

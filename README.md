@@ -148,6 +148,7 @@ This endpoint is used to add a new post. The user must send the content of the p
 
 #### Input:
 - `content`: Content of the post (Required, between 1 and 5000 characters).
+-  `photo`: Image for the post (Optional).
 
 #### Response:
 - **201 Created**: If the post is successfully added.
@@ -159,6 +160,7 @@ This endpoint is used to add a new post. The user must send the content of the p
         "post": {
           "user_id": "user_id_here",
           "content": "Post content here",
+          "photo": "image_filename.jpg"
         }
       }
     }
@@ -247,6 +249,7 @@ This endpoint is used to update an existing post.
 
 #### Input:
 - `content`: New content for the post (Optional).
+- `photo`: New image for the post (Optional).
 
 #### Response:
 - **200 OK**: If the post is updated successfully.
@@ -258,6 +261,7 @@ This endpoint is used to update an existing post.
       "updatedPost": {
         "user_id": "user_id_here",
         "content": "Updated post content",
+          "photo": "updated_image.jpg"
       }
     }
     ```
@@ -302,6 +306,7 @@ This endpoint is used to delete a post. It first verifies that the post belongs 
       "deletePost": {
         "user_id": "user_id_here",
         "content": "Post content to delete",
+        "photo": "image_to_delete.jpg"
       }
     }
     ```

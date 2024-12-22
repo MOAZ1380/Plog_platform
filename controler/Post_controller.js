@@ -5,7 +5,6 @@ const AppError = require('../utils/AppError')
 const httpstatus = require('../utils/http_status');
 
 
-// main and my_profile page to add post 
 const add_post = asyncWrapper(
     async (req, res, next) => {
         const { content } = req.body;
@@ -40,67 +39,64 @@ const add_post = asyncWrapper(
         });
 });
 
-// main page To browse all pages
 const get_all_post = asyncWrapper(
     async (req, res, next) => {
-        // inInfinite Scroll
         const { page = 1, page_size = 10 } = req.query;
-        const skip  = (page - 1) * page_size;
+        const skip = (page - 1) * page_size;
 
         const posts = await Post.find()
-        .sort({ updated_at: -1 })
-        .skip(skip)
-        .limit(Number(page_size))
-        .exec();
+            .sort({ updated_at: -1 })
+            .skip(skip)
+            .limit(Number(page_size))
+            .populate({
+                path: 'likes',
+                select: 'firstName lastName -_id',
+            })
+            .populate({
+                path: 'comments',
+                populate: {
+                    path: 'user_id',
+                    select: 'firstName lastName -_id',
+                },
+            });
 
         res.status(200).json({
             status: httpstatus.SUCCESS,
             data: posts,
         });
-});
+    }
+);
 
-// my_profile -> my_data and my_posts
-const my_profile = asyncWrapper(
+const my_posts = asyncWrapper(
     async (req, res, next) => {
-        
-
         const { page = 1, page_size = 5 } = req.query;
-        const skip  = (page - 1) * page_size;
+        const skip = (page - 1) * page_size;
 
-        const user = await User.findOne(
-            { email: req.user.email },
-            { "__v": false, "password": false }
-        )
-        .populate({
-                path: 'posts',
-                select: '-__v -_id',
-                options: {
-                    skip: skip,
-                    limit: page_size,
-                    sort: { updated_at: -1 },
+        const posts = await Post.find({ user_id: req.user.id })
+            .sort({ updated_at: -1 })
+            .skip(skip)
+            .limit(Number(page_size))
+            .populate({
+                path: 'likes',
+                select: 'firstName lastName -_id',
+            })
+            .populate({
+                path: 'comments',
+                populate: {
+                    path: 'user_id',
+                    select: 'firstName lastName -_id',
                 },
             });
 
-        const totalPosts = await Post.countDocuments({ user_id : user._id });
-        // console.log(totalPosts);
-        const hasMore = skip + page_size < totalPosts;
-
         res.status(200).json({
             status: httpstatus.SUCCESS,
-            data: {
-                user_name: user.firstName + " " + user.lastName,
-                sex: user.sex,
-                my_photo: user.photo,
-                birthDate: user.birthDate,
-                email: user.email,
-                posts: user.posts,
-                hasMore,
-            },
-            });
-});
+            data: posts,
+        });
+    }
+);
 
-// update_post from my_profile and main
-const update_post = asyncWrapper(
+
+const update_my_post = asyncWrapper(
     async (req, res, next) => {
         const { content } = req.body;
 
@@ -121,8 +117,7 @@ const update_post = asyncWrapper(
 });
 
 
-// delete_post from my_profile and main
-const delete_post = asyncWrapper(
+const delete_my_post = asyncWrapper(
     async (req, res, next) => {
         const user = await User.findById(req.user.id);
 
@@ -145,7 +140,7 @@ const delete_post = asyncWrapper(
 module.exports = {
     add_post,
     get_all_post,
-    my_profile,
-    update_post,
-    delete_post,
+    my_posts,
+    update_my_post,
+    delete_my_post,
 }

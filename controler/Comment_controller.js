@@ -15,7 +15,7 @@ const add_comment = asyncWrapper(
             return next(new AppError('Comment content cannot be empty', 400, httpstatus.FAIL));
         }
 
-        const post = await Post.findById(req.params.id);
+        const post = await Post.findById(req.params.PostId);
         if (!post) {
             return next(new AppError('Post not found', 404, httpstatus.FAIL));
         }
@@ -26,16 +26,21 @@ const add_comment = asyncWrapper(
         }).save();
 
         post.comments.push(newComment._id);
-
         await post.save();
+
+        const populatedPost = await Post.findById(post._id).populate({
+            path: 'comments',
+            select: 'content user_id createdAt updatedAt'
+        });
 
         return res.json({
             status: httpstatus.SUCCESS,
             message: "Comment added successfully",
-            data: post.comments
+            data: populatedPost.comments
         });        
     }
 );
+
 
 // main and my_profile page to update comment
 const update_comment = asyncWrapper(
@@ -47,7 +52,7 @@ const update_comment = asyncWrapper(
             return next(new AppError('Comment content cannot be empty', 400, httpstatus.FAIL));
         }
 
-        const post = await Post.findById(req.params.id);
+        const post = await Post.findById(req.params.PostId);
         if (!post) {
             return next(new AppError('Post not found', 404, httpstatus.FAIL));
         }
@@ -65,23 +70,28 @@ const update_comment = asyncWrapper(
 
         await comment.save();
 
+        // Return the updated post with populated comments
+        const populatedPost = await Post.findById(post._id).populate({
+            path: 'comments',
+            select: 'content user_id createdAt updatedAt'
+        });
+
         return res.json({
             status: httpstatus.SUCCESS,
             message: "Comment updated successfully",
-            data: comment
+            data: populatedPost.comments
         });
-        
     }
 );
 
 
 
-// main and my_profile page to remove comment
+
 const delete_comment = asyncWrapper(
     async (req, res, next) => {
         const userId = req.user.id;
 
-        const post = await Post.findById(req.params.id);
+        const post = await Post.findById(req.params.PostId);
         if (!post) {
             return next(new AppError('Post not found', 404, httpstatus.FAIL));
         }
@@ -101,13 +111,19 @@ const delete_comment = asyncWrapper(
 
         await post.save();
 
+        const populatedPost = await Post.findById(post._id).populate({
+            path: 'comments',
+            select: 'content user_id createdAt updatedAt'
+        });
+
         return res.json({
             status: httpstatus.SUCCESS,
             message: "Comment deleted successfully",
-            data: post.comments
+            data: populatedPost.comments
         });
     }
 );
+
 
 module.exports = {
     add_comment,

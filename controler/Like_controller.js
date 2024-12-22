@@ -8,7 +8,7 @@ const httpstatus = require('../utils/http_status');
 const add_like = asyncWrapper(
     async (req, res, next) => {
         const userId = req.user.id;
-        const post = await Post.findById(req.params.id);
+        const post = await Post.findById(req.params.Postid);
 
         if (!post) {
             return next(new AppError('Post not found', 404, httpstatus.FAIL));
@@ -35,7 +35,7 @@ const add_like = asyncWrapper(
 const remove_like = asyncWrapper(
     async (req, res, next) => {
         const userId = req.user.id;
-        const post = await Post.findById(req.params.id);
+        const post = await Post.findById(req.params.Postid);
 
         if (!post) {
             return next(new AppError('Post not found', 404, httpstatus.FAIL));
@@ -58,6 +58,8 @@ const remove_like = asyncWrapper(
         });
     }
 );
+
+
 
 module.exports = {
     add_like,

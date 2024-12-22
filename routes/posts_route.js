@@ -6,23 +6,21 @@ const upload = require('../middleware/multer');
 
 const router = express.Router()
 
-// main route
-router.route('/main')
-    .post(upload.single('photo'), vrifytoken, post_controler.add_post)
+router.route('/AddPost')
+    .post(upload.single('photo'), vrifytoken, post_controler.add_post);
+
+
+router.route('/GetAllPost')
     .get(vrifytoken, post_controler.get_all_post);
 
-router.route('/main/:post_id')
-    .delete(vrifytoken, verifyOwnership, post_controler.delete_post)
-    .patch(upload.single('photo'), vrifytoken, verifyOwnership, post_controler.update_post);
 
-// my_profile route
-router.route('/my_profile')
-    .get(vrifytoken, post_controler.my_profile);
+router.route('/delete_update/:post_id')
+    .delete(vrifytoken, verifyOwnership, post_controler.delete_my_post)
+    .patch(upload.single('photo'), vrifytoken, verifyOwnership, post_controler.update_my_post);
 
-router.route('/my_profile/:post_id')
-    .delete(vrifytoken, verifyOwnership, post_controler.delete_post)
-    .patch(upload.single('photo'), vrifytoken, verifyOwnership, post_controler.update_post);
 
+router.route('/GetMyPost')
+    .get(vrifytoken, post_controler.my_posts);
 
 
 

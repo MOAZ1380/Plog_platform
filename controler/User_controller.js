@@ -29,7 +29,7 @@ const user_register = asyncWrapper(
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
-        const userPhoto = req.file ? req.file.filename : '../uploads/Profile_photo/profile.jpg';
+        const userPhoto = req.file ? req.file.filename : null;
 
         const new_user = new User({
             firstName,

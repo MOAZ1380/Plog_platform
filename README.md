@@ -381,7 +381,7 @@ Endpoints
 
 # 3. Delete Comment
 # Endpoint:
-# DELETE /api/posts/remove_comment/PostId/comment/commentId 
+# DELETE /api/posts/remove_comment/:PostId/comment/:commentId 
 - Description:
 - Deletes a comment from the specified post.
 - Request Headers:
@@ -448,7 +448,7 @@ Endpoints
 # API Documentation: Like Management
 ### Endpoints
 ### Add Like
-### URL: /api/posts/add_like/PostId/like
+### URL: /api/posts/add_like/:PostId/like
 ### Method: POST
 - Description: Adds a like to a post by the authenticated user.
 - Request Headers:

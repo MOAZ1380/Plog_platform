@@ -227,7 +227,7 @@ Endpoints
 # Response:
     - Same as Get All Posts.
 ## 4. Update or Delete a Post
-## Endpoint: PATCH/DELETE /delete_update/:post_id
+## Endpoint: PATCH/DELETE api/posts/delete_update/:post_id
 - Update Post (PATCH)
 - Description: Updates the content and/or photo of a user's post.
 - Request Headers:

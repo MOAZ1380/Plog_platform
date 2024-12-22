@@ -1,38 +1,38 @@
-User Authentication API Documentation
+# User Authentication API Documentation
 
-Overview
+## Overview
 
-This API allows users to register and log in. It provides functionality to handle user registration, login with email and password, and token generation for authenticated requests.
+- This API allows users to register and log in. It provides functionality to handle user registration, login with email and password, and token generation for authenticated requests.
 
-Endpoints
+# Endpoints
 
-1. User Registration
+## 1. User Registration
 
-Endpoint: POST /api/users/register
+- Endpoint: POST /api/users/register
 
-This endpoint is used to register a new user. The user must provide their first name, last name, sex, birth date, email, and password. The server will validate the email and password, check if the user already exists, and if not, create a new user in the database.
+- This endpoint is used to register a new user. The user must provide their first name, last name, sex, birth date, email, and  password. The server will validate the email and password, check if the user already exists, and if not, create a new user in the database.
 
-Input:
+- Input:
 
-firstName: First name of the user (Required).
+-    firstName: First name of the user (Required).
 
-lastName: Last name of the user (Required).
+-   lastName: Last name of the user (Required).
 
-sex: Sex of the user (Required).
+-    sex: Sex of the user (Required).
 
-birthDate: Date of birth of the user (Required, valid date format).
+-   birthDate: Date of birth of the user (Required, valid date format).
 
-email: Email of the user (Required, valid email format).
+-    email: Email of the user (Required, valid email format).
 
-password: Password for the user (Required, hashed).
+-    password: Password for the user (Required, hashed).
 
-photo: Optional profile photo (File upload).
+-    photo: Optional profile photo (File upload).
 
-Response:
+# Response:
 
 201 Created: If the user is successfully registered.
 
-Example:
+# Example:
 
 {
   "status": "SUCCESS",
@@ -49,25 +49,25 @@ Example:
   }
 }
 
-400 Bad Request: If the email is invalid or the user already exists.
+- 400 Bad Request: If the email is invalid or the user already exists.
 
-Example:
+- Example:
 
 {
     "status": "FAIL",
     "message": "User already exists"
 }
 
-400 Bad Request: If the birth date is invalid or missing.
+- 400 Bad Request: If the birth date is invalid or missing.
 
-Example:
+- Example:
 
 {
   "status": "FAIL",
   "message": "Invalid birth date"
 }
 
-400 Bad Request: If the email is invalid.
+- 400 Bad Request: If the email is invalid.
 
 Example:
 
@@ -76,17 +76,17 @@ Example:
   "message": "Invalid email"
 }
 
-2. User Login
+## 2. User Login
 
-Endpoint: POST /api/users/login
+# Endpoint: POST /api/users/login
 
-This endpoint is used to log in an existing user. The user must provide their email and password. If the credentials match, a JWT (JSON Web Token) is generated and returned.
+- This endpoint is used to log in an existing user. The user must provide their email and password. If the credentials match, a JWT (JSON Web Token) is generated and returned.
 
-Input:
+- Input:
 
-email: The email of the user (Required).
+*  email: The email of the user (Required).
 
-password: The password of the user (Required).
+*  password: The password of the user (Required).
 
 Response:
 

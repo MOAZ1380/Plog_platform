@@ -72,6 +72,8 @@ const my_posts = asyncWrapper(
         const { page = 1, page_size = 5 } = req.query;
         const skip = (page - 1) * page_size;
 
+
+        const user_info = await User.find({ _id: req.user.id }, {'password' : 0,'posts': 0 ,'_id': 0, 'likedPosts': 0,'__v': 0});
         const posts = await Post.find({ user_id: req.user.id })
             .sort({ updated_at: -1 })
             .skip(skip)
@@ -89,6 +91,7 @@ const my_posts = asyncWrapper(
             });
 
         res.status(200).json({
+            user_info,
             status: httpstatus.SUCCESS,
             data: posts,
         });

@@ -1,5 +1,5 @@
 const Post = require('../models/Posts_Schema');
-const User = require('../models/Users_Schema'); 
+const User = require('../models/Users_Schema');
 const asyncWrapper = require('../middleware/asyncWrapper');
 const AppError = require('../utils/AppError')
 const httpstatus = require('../utils/http_status');
@@ -21,10 +21,9 @@ const add_post = asyncWrapper(
         }
 
         const newPost = new Post({
-            user_id : userId,
+            user_id: userId,
             photo: req.file ? req.file.filename : null,
-            content,
-            user: userId,
+            content
         });
 
         await newPost.save();
@@ -33,9 +32,13 @@ const add_post = asyncWrapper(
         user.posts.push(newPost._id);
         await user.save();
 
+        // Populate the user_id field before sending response
+        const populatedPost = await Post.findById(newPost._id)
+            .populate('user_id', 'firstName lastName photo');
+
         res.status(201).json({
             status: httpstatus.SUCCESS,
-            data: { post: newPost },
+            data: { post: populatedPost },
         });
 });
 
@@ -48,6 +51,7 @@ const get_all_post = asyncWrapper(
             .sort({ updated_at: -1 })
             .skip(skip)
             .limit(Number(page_size))
+            .populate('user_id', 'firstName lastName photo')
             .populate({
                 path: 'likes',
                 select: 'firstName lastName -_id',
@@ -73,7 +77,7 @@ const my_posts = asyncWrapper(
         const skip = (page - 1) * page_size;
 
 
-        const user_info = await User.find({ _id: req.user.id }, {'password' : 0,'posts': 0 ,'_id': 0, 'likedPosts': 0,'__v': 0});
+        const user_info = await User.find({ _id: req.user.id }, { 'password': 0, 'posts': 0, '_id': 0, 'likedPosts': 0, '__v': 0 });
         const posts = await Post.find({ user_id: req.user.id })
             .sort({ updated_at: -1 })
             .skip(skip)
@@ -105,7 +109,7 @@ const update_my_post = asyncWrapper(
 
 
         if (content) req.post.content = content;
-        if (req.file) req.post.photo = req.file.filename; 
+        if (req.file) req.post.photo = req.file.filename;
 
         req.post.updated_at = Date.now();
 
@@ -117,7 +121,7 @@ const update_my_post = asyncWrapper(
             status_text: httpstatus.SUCCESS,
             updatedPost: req.post,
         });
-});
+    });
 
 
 const delete_my_post = asyncWrapper(
@@ -135,7 +139,7 @@ const delete_my_post = asyncWrapper(
             status_text: httpstatus.SUCCESS,
             deletePost: req.post,
         });
-});
+    });
 
 
 

@@ -1,6 +1,7 @@
 const User = require('../models/Users_Schema');
 const asyncWrapper = require('../middleware/asyncWrapper');
 const bcrypt = require('bcryptjs');
+const Post = require('../models/Posts_Schema');
 const validator = require('validator');
 const generateToken = require('../utils/generate_token');
 const AppError = require('../utils/AppError')
@@ -77,10 +78,22 @@ const user_login = asyncWrapper(
         });
 });
 
-
+const delete_account = asyncWrapper(
+    async (req, res, next) => {
+        const user = req.user;
+        const [delete_user, delete_post] = await Promise.all([
+            User.findByIdAndDelete(user.id),
+            Post.deleteMany({ user_id: user.id }),
+        ]);
+        res.status(200).json({
+            status: httpstatus.SUCCESS,
+            data: { message: "Account and Posts deleted successfully " }
+        });
+});
 
 
 module.exports = {
     user_register,
     user_login,
+    delete_account
 };

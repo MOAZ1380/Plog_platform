@@ -564,3 +564,14 @@ Success (200):
 ##### Utilities
 ##### http_status: Defines success and failure status codes.
 
+
+
+
+
+
+
+
+### http://localhost:3000/api/posts/fetch_likeAndComment/674a1f103251609162c132d0
+
+### http://localhost:3000/api/posts/GetUserPost/674a1e893251609162c1329c 
+

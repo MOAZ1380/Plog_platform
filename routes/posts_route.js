@@ -23,6 +23,9 @@ router.route('/GetMyPost')
     .get(vrifytoken, post_controler.my_posts);
 
 
+router.route('/GetUserPost/:UserId')
+    .get(vrifytoken, post_controler.get_user_post);
+
 
 
 module.exports = router;

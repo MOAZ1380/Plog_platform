@@ -5,31 +5,17 @@ import './Post.css';
 import { jwtDecode } from 'jwt-decode';
 import { useNavigate } from 'react-router-dom';
 
-const Post = ({ post, jwt, handleEditPost, handleDeletePost, onCommentUpdate }) => {
+const Post = ({ post, jwt, handleEditPost, handleDeletePost, onCommentUpdate, fetchLikedUsers }) => {
     const decodedToken = jwtDecode(jwt);
     const userId = decodedToken.id;
 
     const [isLiked, setIsLiked] = useState(post.likes.includes(userId));
     const [likeCount, setLikeCount] = useState(post.num_like);
-    const [editingContent, setEditingContent] = useState('');
-    const [editingPost, setEditingPost] = useState(null);
     const [postComments, setPostComments] = useState(post.comments || []);
-    const [dropdownVisible, setDropdownVisible] = useState(false);
-    const dropdownRef = useRef(null);
+    const [isLikesModalVisible, setIsLikesModalVisible] = useState(false);
+    const [likedUsers, setLikedUsers] = useState([]);
+    const [loadingLikes, setLoadingLikes] = useState(false);
     const navigate = useNavigate();
-
-    useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-                setDropdownVisible(false);
-            }
-        };
-
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
-    }, []);
 
     const handleLike = async () => {
         try {
@@ -39,43 +25,30 @@ const Post = ({ post, jwt, handleEditPost, handleDeletePost, onCommentUpdate }) 
 
             await axios.post(endpoint, {}, { headers: { Authorization: `Bearer ${jwt}` } });
 
+            // Update state optimistically
             setIsLiked(!isLiked);
             setLikeCount(isLiked ? likeCount - 1 : likeCount + 1);
         } catch (error) {
-            console.error('Error handling like/unlike:', error.response?.data || error.message);
+            console.error('Error toggling like:', error.response?.data || error.message);
         }
     };
 
-    const confirmDeletePost = (postId) => {
-        const confirmed = window.confirm('Are you sure you want to delete this post?');
-        if (confirmed) {
-            handleDeletePost(postId);
+    const showLikesModal = async () => {
+        setIsLikesModalVisible(true);
+        setLoadingLikes(true);
+        try {
+            const users = await fetchLikedUsers(post._id);
+            setLikedUsers(users || []); // Fallback to empty array
+        } catch (error) {
+            console.error('Error fetching liked users:', error.response?.data || error.message);
+        } finally {
+            setLoadingLikes(false);
         }
     };
 
     const handleCommentUpdate = (updatedComments) => {
         setPostComments(updatedComments);
-
-        if (onCommentUpdate) {
-            onCommentUpdate(updatedComments);
-        }
-    };
-
-    const formattedDate = (dateString) => {
-        if (!dateString) return 'Unknown';
-        const date = new Date(dateString);
-        if (isNaN(date.getTime())) {
-            console.error('Invalid date:', dateString);
-            return 'Unknown';
-        }
-
-        return date.toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-        });
+        if (onCommentUpdate) onCommentUpdate(updatedComments);
     };
 
     const handleProfileNavigation = () => {
@@ -90,112 +63,55 @@ const Post = ({ post, jwt, handleEditPost, handleDeletePost, onCommentUpdate }) 
     return (
         <div className="post">
             <div className="post-header">
-                <div className="post-user-info">
-                    <div
-                        className="user-avatar-link"
-                        onClick={handleProfileNavigation}
-                    >
-                        <div className="user-avatar">
-                            {post.user_id?.photo ? (
-                                <img
-                                    src={`http://localhost:3000/uploads/Profile_photo/${post.user_id.photo}`}
-                                    alt="Avatar"
-                                    className="user-avatar"
-                                />
-                            ) : (
-                                <div className="default-avatar">
-                                    {post.user_id?.firstName?.[0] || 'U'}
-                                </div>
-                            )}
-                        </div>
+                <div className="post-user-info" onClick={handleProfileNavigation}>
+                    <div className="user-avatar">
+                        {post.user_id?.photo ? (
+                            <img
+                                src={`http://localhost:3000/uploads/Profile_photo/${post.user_id.photo}`}
+                                alt="User Avatar"
+                            />
+                        ) : (
+                            <div className="default-avatar">{post.user_id?.firstName?.[0] || 'U'}</div>
+                        )}
                     </div>
-
-                    <div
-                        className="user-name-link"
-                        onClick={handleProfileNavigation}
-                    >
-                        <span className="user-name">
-                            {post.user_id?.firstName || 'Unknown'} {post.user_id?.lastName || 'User'}
-                        </span>
-                        <span className="post-date">
-                            {formattedDate(post.created_at)}
-                        </span>
+                    <div>
+                        <span>{post.user_id?.firstName} {post.user_id?.lastName}</span>
+                        <span>{new Date(post.created_at).toLocaleString()}</span>
                     </div>
                 </div>
-                {post.user_id?._id === userId && (
-                    <div className="post-dropdown" ref={dropdownRef}>
-                        <button className="dropdown-toggle" onClick={() => setDropdownVisible(!dropdownVisible)}>
-                            &#x22EE;
-                        </button>
-                        {dropdownVisible && (
-                            <div className="dropdown-menu">
-                                <button
-                                    onClick={() => {
-                                        setEditingPost(post._id);
-                                        setEditingContent(post.content);
-                                        setDropdownVisible(false);
-                                    }}
-                                >
-                                    Edit
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        confirmDeletePost(post._id);
-                                        setDropdownVisible(false);
-                                    }}
-                                >
-                                    Delete
-                                </button>
-                            </div>
+            </div>
+            <div className="post-content">
+                {post.photo && (
+                    <img
+                        src={`http://localhost:3000/uploads/Posts_photo/${post.photo}`}
+                        alt="Post"
+                    />
+                )}
+                <p>{post.content}</p>
+            </div>
+            <div className="post-actions">
+                <button onClick={handleLike}>
+                    {isLiked ? 'Unlike' : 'Like'} ({likeCount})
+                </button>
+                <button onClick={showLikesModal}>View Likes</button>
+                {isLikesModalVisible && (
+                    <div className="modal">
+                        <h3>Liked By</h3>
+                        {loadingLikes ? (
+                            <p>Loading...</p>
+                        ) : (
+                            <ul>
+                                {likedUsers.map((user) => (
+                                    <li key={user._id}>
+                                        {user.firstName} {user.lastName}
+                                    </li>
+                                ))}
+                            </ul>
                         )}
+                        <button onClick={() => setIsLikesModalVisible(false)}>Close</button>
                     </div>
                 )}
             </div>
-
-            {editingPost === post._id ? (
-                <div>
-                    <textarea
-                        value={editingContent}
-                        onChange={(e) => setEditingContent(e.target.value)}
-                        rows="3"
-                        placeholder="Edit your post"
-                    />
-                    <div>
-                        <button
-                            onClick={() => {
-                                handleEditPost(post._id, editingContent);
-                                setEditingPost(null);
-                            }}
-                        >
-                            Save
-                        </button>
-                        <button onClick={() => setEditingPost(null)}>
-                            Cancel
-                        </button>
-                    </div>
-                </div>
-            ) : (
-                <>
-                    {post.photo && (
-                        <img
-                            src={`http://localhost:3000/uploads/Posts_photo/${post.photo}`}
-                            alt="Post"
-                            className="post-photo"
-                        />)}
-                    <p className="post-content">{post.content}</p>
-                </>
-            )}
-
-            <div className="post-actions">
-                <button
-                    className={`like-button ${isLiked ? 'liked' : ''}`}
-                    onClick={handleLike}
-                >
-                    {isLiked ? 'Unlike' : 'Like'}
-                </button>
-                <span>{likeCount} Likes</span>
-            </div>
-
             <Comment
                 comments={postComments}
                 postId={post._id}

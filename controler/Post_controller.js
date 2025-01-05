@@ -80,13 +80,13 @@ const my_posts = asyncWrapper(
             .limit(Number(page_size))
             .populate({
                 path: 'likes',
-                select: 'firstName lastName -_id',
+                select: 'firstName lastName photo -_id',
             })
             .populate({
                 path: 'comments',
                 populate: {
                     path: 'user_id',
-                    select: 'firstName lastName -_id',
+                    select: 'firstName lastName photo -_id',
                 },
             });
 

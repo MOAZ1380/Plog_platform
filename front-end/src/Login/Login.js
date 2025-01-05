@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './Login.css';
+import { useNavigate } from 'react-router-dom';
 
 const Login = ({ onLogin }) => {
     const [formData, setFormData] = useState({
@@ -9,6 +10,7 @@ const Login = ({ onLogin }) => {
     const [errors, setErrors] = useState({});
     const [isLoading, setIsLoading] = useState(false);
     const [serverError, setServerError] = useState('');
+    const navigate = useNavigate();
 
     const validateForm = () => {
         const newErrors = {};
@@ -64,9 +66,15 @@ const Login = ({ onLogin }) => {
                 throw new Error(data.message || 'Invalid email or password');
             }
 
-            onLogin(data.data.my_token);
+            localStorage.setItem('token', data.data.my_token);
+
+            if (onLogin) {
+                onLogin(data.data.my_token);
+            }
+
+            navigate('/profile');
         } catch (error) {
-            setServerError(error.message);
+            setServerError(error.message || 'An error occurred during login.');
         } finally {
             setIsLoading(false);
         }

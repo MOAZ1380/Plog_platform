@@ -9,7 +9,6 @@ const Header = ({ jwt, setJwt }) => {
     const navigate = useNavigate();
     const [user, setUser] = useState(null);
 
-    // Fetch user data when the component mounts
     useEffect(() => {
         const fetchUser = async () => {
             try {
@@ -24,15 +23,15 @@ const Header = ({ jwt, setJwt }) => {
                 const response = await axios.get(`http://localhost:3000/api/users/${userId}`, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
-                console.log('User Data:', response.data); // Debugging
-                setUser(response.data); // Assuming the response contains the user object
+                console.log('User Data:', response.data); 
+                setUser(response.data); 
             } catch (error) {
                 console.error('Error fetching user:', error);
             }
         };
 
         fetchUser();
-    }, [jwt]); // Re-fetch user data if the JWT changes
+    }, [jwt]);
 
     const handleLogout = () => {
         localStorage.removeItem('token');
@@ -60,25 +59,23 @@ const Header = ({ jwt, setJwt }) => {
     };
 
     const handleHomeClick = () => {
-        navigate('/feed'); // Navigate to the feed page
+        navigate('/feed');
     };
 
     return (
         <header className="header">
-            {/* Home button at the top-left */}
             <button className="home-button" onClick={handleHomeClick}>
                 Home
             </button>
 
-            {/* Profile icon at the top-right */}
             <div className="profile-icon" onMouseEnter={() => setIsDropdownOpen(true)} onMouseLeave={() => setIsDropdownOpen(false)}>
                 {user?.photo ? (
                     <img
-                        src={`http://localhost:3000/uploads/Profile_photo/${user.photo}`} // Corrected path
+                        src={`http://localhost:3000/uploads/Profile_photo/${user.photo}`} 
                         alt="Profile Icon"
                     />
                 ) : (
-                    <div className="default-avatar">U</div> // Fallback if no photo is available
+                    <div className="default-avatar">U</div> 
                 )}
                 {isDropdownOpen && (
                     <div className="dropdown-menu">

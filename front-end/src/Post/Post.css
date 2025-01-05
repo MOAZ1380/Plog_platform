@@ -1,4 +1,3 @@
-/* Post.css */
 .post {
     background: #fff;
     border-radius: 12px;
@@ -91,7 +90,7 @@
 }
 
 .dropdown-menu {
-    display: none; /* Hide dropdown by default */
+    display: none;
     position: absolute;
     right: 0;
     top: 100%;
@@ -103,7 +102,6 @@
     min-width: 120px;
 }
 
-/* Show dropdown when dropdownVisible is true */
 .post-dropdown .dropdown-menu {
     display: block;
 }

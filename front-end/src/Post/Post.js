@@ -62,11 +62,10 @@ const Post = ({ post, jwt, handleEditPost, handleDeletePost, onCommentUpdate }) 
     };
 
     const formattedDate = (dateString) => {
-        if (!dateString) return 'Unknown'; // Fallback for missing or null date
-
+        if (!dateString) return 'Unknown';
         const date = new Date(dateString);
         if (isNaN(date.getTime())) {
-            console.error('Invalid date:', dateString); // Log invalid dates for debugging
+            console.error('Invalid date:', dateString);
             return 'Unknown';
         }
 
@@ -80,9 +79,9 @@ const Post = ({ post, jwt, handleEditPost, handleDeletePost, onCommentUpdate }) 
     };
 
     const handleProfileNavigation = () => {
-        console.log('Navigating to profile:', post.user_id?._id); // Debugging
+        console.log('Navigating to profile:', post.user_id?._id);
         if (post.user_id?._id) {
-            navigate(`/profile`); // Navigate to the profile page
+            navigate(`/profile`);
         } else {
             console.error('User ID is missing');
         }
@@ -92,10 +91,9 @@ const Post = ({ post, jwt, handleEditPost, handleDeletePost, onCommentUpdate }) 
         <div className="post">
             <div className="post-header">
                 <div className="post-user-info">
-                    {/* Avatar with navigation */}
                     <div
                         className="user-avatar-link"
-                        onClick={handleProfileNavigation} // Use the navigation handler
+                        onClick={handleProfileNavigation}
                     >
                         <div className="user-avatar">
                             {post.user_id?.photo ? (
@@ -112,10 +110,9 @@ const Post = ({ post, jwt, handleEditPost, handleDeletePost, onCommentUpdate }) 
                         </div>
                     </div>
 
-                    {/* Username with navigation */}
                     <div
                         className="user-name-link"
-                        onClick={handleProfileNavigation} // Use the navigation handler
+                        onClick={handleProfileNavigation}
                     >
                         <span className="user-name">
                             {post.user_id?.firstName || 'Unknown'} {post.user_id?.lastName || 'User'}

@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import Header from '../Header/Header'
+import { Routes, Route, Navigate } from 'react-router-dom';
 import Register from '../Register/Register';
 import Login from '../Login/Login';
 import Feed from '../Feed/Feed';
-import Footer from '../Footer/Footer'
+import Profile from '../Profile/Profile';
+import Header from '../Header/Header';
+
 const App = () => {
   const [jwt, setJwt] = useState(null);
   const [isLogin, setIsLogin] = useState(true);
@@ -22,32 +24,40 @@ const App = () => {
 
   return (
     <div className="app-container">
-      {!jwt ? (
-        <div className="auth-wrapper">
-          {isLogin ? (
-            <>
-              <Login onLogin={handleLogin} />
-              <button className="toggle-button" onClick={toggleForm}>
-                Don't have an account? Sign up
-              </button>
-            </>
-          ) : (
-            <>
-              <Register onRegisterSuccess={handleRegisterSuccess} />
-              <button className="toggle-button" onClick={toggleForm}>
-                Already have an account? Sign in
-              </button>
-            </>
-          )}
-        </div>
-      ) : (
-        <>
-          {/* <Header /> */}
-          <Feed jwt={jwt} />
-          {/* <Footer  /> */}
-        </>
-
-      )}
+      {jwt && <Header jwt={jwt} setJwt={setJwt} />}
+      <Routes>
+        {jwt ? (
+          <>
+            <Route path="/feed" element={<Feed jwt={jwt} />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="*" element={<Navigate to="/feed" />} />
+          </>
+        ) : (
+          <>
+            <Route
+              path="/login"
+              element={
+                isLogin ? (
+                  <>
+                    <Login onLogin={handleLogin} />
+                    <button className="toggle-button" onClick={toggleForm}>
+                      Don't have an account? Sign up
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <Register onRegisterSuccess={handleRegisterSuccess} />
+                    <button className="toggle-button" onClick={toggleForm}>
+                      Already have an account? Sign in
+                    </button>
+                  </>
+                )
+              }
+            />
+            <Route path="*" element={<Navigate to="/login" />} />
+          </>
+        )}
+      </Routes>
     </div>
   );
 };

@@ -23,13 +23,12 @@ const Profile = () => {
                 const decodedToken = jwtDecode(token);
                 const userId = decodedToken.id;
 
-                // Fetch user data using the userId
                 const response = await axios.get("http://localhost:3000/api/posts/GetMyPost", {
                     headers: { Authorization: `Bearer ${token}` },
                 });
 
-                console.log('User Data:', response.data); // Debug the response
-                setUser(response.data); // Assuming the response contains the user object
+                console.log('User Data:', response.data);
+                setUser(response.data);
                 setFormData({
                     firstName: response.data.firstName,
                     lastName: response.data.lastName,
@@ -60,7 +59,7 @@ const Profile = () => {
                 { headers: { Authorization: `Bearer ${token}` } }
             );
 
-            setUser(response.data); // Assuming the response contains the updated user object
+            setUser(response.data);
             setIsEditing(false);
         } catch (error) {
             console.error('Error updating user profile:', error);
@@ -69,11 +68,11 @@ const Profile = () => {
     };
 
     const formatDate = (dateString) => {
-        if (!dateString) return 'Unknown'; // Fallback for missing or null date
+        if (!dateString) return 'Unknown';
 
         const date = new Date(dateString);
         if (isNaN(date.getTime())) {
-            console.error('Invalid date:', dateString); // Log invalid dates for debugging
+            console.error('Invalid date:', dateString);
             return 'Unknown';
         }
 
@@ -102,7 +101,7 @@ const Profile = () => {
                             alt="Profile"
                         />
                     ) : (
-                        <div className="default-avatar">U</div> // Fallback if no photo is available
+                        <div className="default-avatar">U</div>
                     )}
                     {dropdownVisible && (
                         <div className="dropdown-menu">
@@ -120,7 +119,7 @@ const Profile = () => {
                             alt="Profile"
                         />
                     ) : (
-                        <div className="default-avatar">U</div> // Fallback if no photo is available
+                        <div className="default-avatar">U</div>
                     )}
                 </div>
                 <div className="profile-info">

@@ -91,9 +91,69 @@ const delete_account = asyncWrapper(
         });
 });
 
+const update_profile = asyncWrapper(
+    async (req, res, next) => {
+        const userId = req.user.id;
+        const updateData = req.body; 
+
+
+        if (updateData.email) {
+            if (!validator.isEmail(updateData.email)) {
+                let error = AppError.create("Invalid email", 400, httpstatus.FAIL);
+                return next(error);
+            }
+
+            const oldUser = await User.findOne({ email: updateData.email });
+            if (oldUser && oldUser.id !== req.user.id) {
+                let error = AppError.create("Email already in use by another user", 400, httpstatus.FAIL);
+                return next(error);
+            }
+        }
+
+
+        if (Object.keys(updateData).length === 0 && req.file === undefined) {
+            let error = AppError.create("No data provided for update", 400, httpstatus.FAIL);
+            return next(error);
+        }
+
+        const user = await User.findById(userId);
+        if (!user) {
+            return next(AppError.create("User not found", 404, httpstatus.FAIL));
+        }
+
+        if (updateData.password) {  
+            const hashedPassword = await bcrypt.hash(updateData.password, 10);
+            user.password = hashedPassword; 
+        }
+
+        if(req.file){
+            user.photo = req.file.filename;
+        }
+
+        Object.keys(updateData).forEach((key) => {
+            if (key !== "password") {
+                user[key] = updateData[key];
+            }
+        });
+
+        await user.save();
+
+        res.status(200).json({
+            status: httpstatus.SUCCESS,
+            data: { user },
+        });
+    }
+);
+
+
+
+
+    
+
 
 module.exports = {
     user_register,
     user_login,
-    delete_account
+    delete_account,
+    update_profile,
 };

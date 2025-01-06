@@ -16,6 +16,9 @@ router.route('/login')
 router.route('/delete_account')
     .delete(vrifytoken, user_controler.delete_account)
 
+router.route('/update_profile')
+    .patch(vrifytoken, upload.single('photo'), user_controler.update_profile)
+
 
 
 

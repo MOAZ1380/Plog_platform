@@ -573,5 +573,11 @@ Success (200):
 
 ### http://localhost:3000/api/posts/fetch_likeAndComment/674a1f103251609162c132d0
 
-### http://localhost:3000/api/posts/GetUserPost/674a1e893251609162c1329c 
+### http://localhost:3000/api/posts/GetUserPost/674a1e893251609162c1329c
+
+
+
+### http://localhost:3000/api/users/update_profile              patch
+
+When you change the email, you need to log in again, if you change the firstName, lastName, photo, or password, you do not need to log in again.
 

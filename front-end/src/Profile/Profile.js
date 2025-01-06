@@ -13,6 +13,9 @@ const Profile = () => {
     const navigate = useNavigate();
     const { userId } = useParams(); // Extract userId from the URL
 
+    // State to store the logged-in user's ID
+    const [loggedInUserId, setLoggedInUserId] = useState(null);
+
     useEffect(() => {
         const fetchUserProfile = async () => {
             try {
@@ -21,10 +24,12 @@ const Profile = () => {
                     throw new Error('No token found. Please log in.');
                 }
 
-                // If userId is undefined, redirect to the logged-in user's profile
+                // Decode the token to get the logged-in user's ID
                 const decodedToken = jwtDecode(token);
                 const currentUserId = decodedToken.id;
+                setLoggedInUserId(currentUserId); // Set the logged-in user's ID
 
+                // If userId is undefined, redirect to the logged-in user's profile
                 if (!userId) {
                     navigate(`/profile/${currentUserId}`);
                     return;
@@ -111,11 +116,14 @@ const Profile = () => {
 
     return (
         <div className="profile-container">
-            <div className="header">
-                <button className="edit-profile-button" onClick={() => setIsEditing(true)}>
-                    Edit Profile
-                </button>
-            </div>
+            {/* Conditionally render the header only if the logged-in user is viewing their own profile */}
+            {loggedInUserId === userId && (
+                <div className="header">
+                    <button className="edit-profile-button" onClick={() => setIsEditing(true)}>
+                        Edit Profile
+                    </button>
+                </div>
+            )}
 
             <div className="profile-content">
                 <div className="profile-photo">

@@ -9,11 +9,18 @@ const Profile = () => {
     const [posts, setPosts] = useState([]);
     const [error, setError] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
-    const [formData, setFormData] = useState({ firstName: '', lastName: '', email: '', photo: '' });
+    const [formData, setFormData] = useState({
+        firstName: '',
+        lastName: '',
+        email: '',
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: '',
+        photo: null,
+    });
     const navigate = useNavigate();
-    const { userId } = useParams(); // Extract userId from the URL
+    const { userId } = useParams();
 
-    // State to store the logged-in user's ID
     const [loggedInUserId, setLoggedInUserId] = useState(null);
 
     useEffect(() => {
@@ -24,40 +31,32 @@ const Profile = () => {
                     throw new Error('No token found. Please log in.');
                 }
 
-                // Decode the token to get the logged-in user's ID
                 const decodedToken = jwtDecode(token);
                 const currentUserId = decodedToken.id;
-                setLoggedInUserId(currentUserId); // Set the logged-in user's ID
+                setLoggedInUserId(currentUserId);
 
-                // If userId is undefined, redirect to the logged-in user's profile
                 if (!userId) {
                     navigate(`/profile/${currentUserId}`);
                     return;
                 }
 
-                // Fetch user info
                 const userResponse = await axios.get(
                     `http://localhost:3000/api/users/${userId}`,
                     { headers: { Authorization: `Bearer ${token}` } }
                 );
 
-                // Fetch user posts
                 const postsResponse = await axios.get(
                     `http://localhost:3000/api/posts/GetUserPost/${userId}`,
                     { headers: { Authorization: `Bearer ${token}` } }
                 );
 
-                console.log('User Data:', userResponse.data); // Debugging
-                console.log('User Posts:', postsResponse.data); // Debugging
-
-                // Ensure the user object has the required fields
                 const userData = userResponse.data.data;
                 if (!userData.username) {
                     userData.username = `${userData.firstName} ${userData.lastName}`;
                 }
 
                 setUser(userData);
-                setPosts(postsResponse.data.data || []); // Ensure posts is an array
+                setPosts(postsResponse.data.data || []);
             } catch (error) {
                 console.error('Error fetching user profile:', error);
                 setError(error.message);
@@ -73,20 +72,34 @@ const Profile = () => {
         setFormData({ ...formData, [name]: value });
     };
 
+    const handleFileChange = (e) => {
+        setFormData({ ...formData, photo: e.target.files[0] });
+    };
+
     const handleSave = async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.put(
-                `http://localhost:3000/api/users/update`,
-                formData,
-                { headers: { Authorization: `Bearer ${token}` } }
+            const data = new FormData();
+    
+            // Append only the fields that are being updated
+            const fields = ['firstName', 'lastName', 'email', 'currentPassword', 'newPassword', 'confirmPassword', 'photo'];
+            fields.forEach(field => {
+                if (formData[field]) {
+                    data.append(field, formData[field]);
+                }
+            });
+    
+            const response = await axios.patch(
+                `http://localhost:3000/api/users/update_profile`,
+                data,
+                { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' } }
             );
-
-            setUser(response.data);
-            setIsEditing(false);
+    
+            setUser(response.data.data.user); // Update the user state with the new data
+            setIsEditing(false); // Exit editing mode
         } catch (error) {
             console.error('Error updating user profile:', error);
-            setError(error.message);
+            setError(error.response?.data?.message || 'Failed to update profile');
         }
     };
 
@@ -116,7 +129,6 @@ const Profile = () => {
 
     return (
         <div className="profile-container">
-            {/* Conditionally render the header only if the logged-in user is viewing their own profile */}
             {loggedInUserId === userId && (
                 <div className="header">
                     <button className="edit-profile-button" onClick={() => setIsEditing(true)}>
@@ -161,9 +173,30 @@ const Profile = () => {
                                 placeholder="Email"
                             />
                             <input
+                                type="password"
+                                name="currentPassword"
+                                value={formData.currentPassword}
+                                onChange={handleInputChange}
+                                placeholder="Current Password"
+                            />
+                            <input
+                                type="password"
+                                name="newPassword"
+                                value={formData.newPassword}
+                                onChange={handleInputChange}
+                                placeholder="New Password"
+                            />
+                            <input
+                                type="password"
+                                name="confirmPassword"
+                                value={formData.confirmPassword}
+                                onChange={handleInputChange}
+                                placeholder="Confirm New Password"
+                            />
+                            <input
                                 type="file"
                                 name="photo"
-                                onChange={(e) => setFormData({ ...formData, photo: e.target.files[0] })}
+                                onChange={handleFileChange}
                             />
                             <button onClick={handleSave}>Save</button>
                             <button onClick={() => setIsEditing(false)}>Cancel</button>

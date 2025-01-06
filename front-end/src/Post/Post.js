@@ -53,7 +53,7 @@ const Post = ({ post, jwt, handleEditPost, handleDeletePost, onCommentUpdate, fe
     const handleProfileNavigation = (e) => {
         e.preventDefault();
         if (post.user_id?._id) {
-            navigate(`/profile/${post.user_id._id}`); 
+            navigate(`/profile/${post.user_id._id}`);
         } else {
             console.error('User ID is missing');
         }
@@ -68,10 +68,27 @@ const Post = ({ post, jwt, handleEditPost, handleDeletePost, onCommentUpdate, fe
                             <img
                                 src={`http://localhost:3000/uploads/Profile_photo/${post.user_id.photo}`}
                                 alt="User Avatar"
+                                style={{
+                                    width: '100%',
+                                    height: '100%',
+                                    objectFit: 'cover',
+                                    objectPosition: 'center',
+                                    borderRadius: '50%',
+                                }}
+                                onError={(e) => {
+                                    e.target.style.display = 'none';
+                                    e.target.nextSibling.style.display = 'flex';
+                                }}
                             />
                         ) : (
-                            <div className="default-avatar">{post.user_id?.firstName?.[0] || 'U'}</div>
+                            <div className="default-avatar">
+                                {post.user_id?.firstName?.[0] || 'U'}
+                            </div>
                         )}
+                        {/* Fallback default avatar */}
+                        <div className="default-avatar" style={{ display: 'none' }}>
+                            {post.user_id?.firstName?.[0] || 'U'}
+                        </div>
                     </div>
                     <div>
                         <span>{post.user_id?.firstName} {post.user_id?.lastName}</span>

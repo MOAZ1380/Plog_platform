@@ -47,7 +47,6 @@
     height: 40px;
     border-radius: 50%;
     overflow: hidden;
-    background-color: var(--primary-color);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -60,6 +59,13 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
+    object-position: center;
+    display: block;
+}
+
+.default-avatar {
+    font-size: 20px;
+    text-transform: uppercase;
 }
 
 .post-user-info span {
@@ -175,7 +181,6 @@
     background-color: var(--danger-hover-color);
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
     .post {
         padding: 15px;

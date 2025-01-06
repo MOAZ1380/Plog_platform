@@ -81,7 +81,6 @@ const Profile = () => {
             const token = localStorage.getItem('token');
             const data = new FormData();
     
-            // Append only the fields that are being updated
             const fields = ['firstName', 'lastName', 'email', 'currentPassword', 'newPassword', 'confirmPassword', 'photo'];
             fields.forEach(field => {
                 if (formData[field]) {
@@ -95,8 +94,8 @@ const Profile = () => {
                 { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' } }
             );
     
-            setUser(response.data.data.user); // Update the user state with the new data
-            setIsEditing(false); // Exit editing mode
+            setUser(response.data.data.user);
+            setIsEditing(false);
         } catch (error) {
             console.error('Error updating user profile:', error);
             setError(error.response?.data?.message || 'Failed to update profile');

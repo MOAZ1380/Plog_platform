@@ -2,15 +2,16 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import './Profile.css';
 import { jwtDecode } from 'jwt-decode';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 const Profile = () => {
     const [user, setUser] = useState(null);
+    const [posts, setPosts] = useState([]);
     const [error, setError] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
     const [formData, setFormData] = useState({ firstName: '', lastName: '', email: '', photo: '' });
-    const [dropdownVisible, setDropdownVisible] = useState(false);
     const navigate = useNavigate();
+    const { userId } = useParams(); // Extract userId from the URL
 
     useEffect(() => {
         const fetchUserProfile = async () => {
@@ -20,21 +21,38 @@ const Profile = () => {
                     throw new Error('No token found. Please log in.');
                 }
 
+                // If userId is undefined, redirect to the logged-in user's profile
                 const decodedToken = jwtDecode(token);
-                const userId = decodedToken.id;
+                const currentUserId = decodedToken.id;
 
-                const response = await axios.get("http://localhost:3000/api/posts/GetMyPost", {
-                    headers: { Authorization: `Bearer ${token}` },
-                });
+                if (!userId) {
+                    navigate(`/profile/${currentUserId}`);
+                    return;
+                }
 
-                console.log('User Data:', response.data);
-                setUser(response.data);
-                setFormData({
-                    firstName: response.data.firstName,
-                    lastName: response.data.lastName,
-                    email: response.data.email,
-                    photo: response.data.photo,
-                });
+                // Fetch user info
+                const userResponse = await axios.get(
+                    `http://localhost:3000/api/users/${userId}`,
+                    { headers: { Authorization: `Bearer ${token}` } }
+                );
+
+                // Fetch user posts
+                const postsResponse = await axios.get(
+                    `http://localhost:3000/api/posts/GetUserPost/${userId}`,
+                    { headers: { Authorization: `Bearer ${token}` } }
+                );
+
+                console.log('User Data:', userResponse.data); // Debugging
+                console.log('User Posts:', postsResponse.data); // Debugging
+
+                // Ensure the user object has the required fields
+                const userData = userResponse.data.data;
+                if (!userData.username) {
+                    userData.username = `${userData.firstName} ${userData.lastName}`;
+                }
+
+                setUser(userData);
+                setPosts(postsResponse.data.data || []); // Ensure posts is an array
             } catch (error) {
                 console.error('Error fetching user profile:', error);
                 setError(error.message);
@@ -43,7 +61,7 @@ const Profile = () => {
         };
 
         fetchUserProfile();
-    }, [navigate]);
+    }, [userId, navigate]);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -94,21 +112,9 @@ const Profile = () => {
     return (
         <div className="profile-container">
             <div className="header">
-                <div className="profile-icon" onClick={() => setDropdownVisible(!dropdownVisible)}>
-                    {user.photo ? (
-                        <img
-                            src={`http://localhost:3000/uploads/Profile_photo/${user.photo}`}
-                            alt="Profile"
-                        />
-                    ) : (
-                        <div className="default-avatar">U</div>
-                    )}
-                    {dropdownVisible && (
-                        <div className="dropdown-menu">
-                            <button onClick={() => setIsEditing(true)}>Edit Profile</button>
-                        </div>
-                    )}
-                </div>
+                <button className="edit-profile-button" onClick={() => setIsEditing(true)}>
+                    Edit Profile
+                </button>
             </div>
 
             <div className="profile-content">
@@ -119,7 +125,7 @@ const Profile = () => {
                             alt="Profile"
                         />
                     ) : (
-                        <div className="default-avatar">U</div>
+                        <div className="default-avatar">{user.firstName ? user.firstName.charAt(0) : 'U'}</div>
                     )}
                 </div>
                 <div className="profile-info">
@@ -157,11 +163,32 @@ const Profile = () => {
                     ) : (
                         <>
                             <h2>{user.firstName} {user.lastName}</h2>
-                            <p>{user.email}</p>
                             <p>Joined: {formatDate(user.createdAt)}</p>
                         </>
                     )}
                 </div>
+            </div>
+
+            <div className="user-posts">
+                <h3>Posts</h3>
+                {posts.length > 0 ? (
+                    posts.map((post) => (
+                        <div key={post._id} className="post">
+                            <div className="post-meta">
+                                <span>{post.user_id?.firstName} {post.user_id?.lastName}</span> • {formatDate(post.created_at)}
+                            </div>
+                            <p>{post.content}</p>
+                            {post.photo && (
+                                <img
+                                    src={`http://localhost:3000/uploads/Posts_photo/${post.photo}`}
+                                    alt="Post"
+                                />
+                            )}
+                        </div>
+                    ))
+                ) : (
+                    <p>No posts Yet.</p>
+                )}
             </div>
         </div>
     );

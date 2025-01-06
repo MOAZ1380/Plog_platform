@@ -29,7 +29,7 @@ const App = () => {
         {jwt ? (
           <>
             <Route path="/feed" element={<Feed jwt={jwt} />} />
-            <Route path="/profile" element={<Profile />} />
+            <Route path="/profile/:userId" element={<Profile jwt={jwt} />} />
             <Route path="*" element={<Navigate to="/feed" />} />
           </>
         ) : (

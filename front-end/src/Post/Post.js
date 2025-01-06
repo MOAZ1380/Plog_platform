@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
-import Comment from '../Comment/Comment';
+import Comment from '../Comment/Comment'; // Import the Comment component
 import './Post.css';
 import { jwtDecode } from 'jwt-decode';
 import { useNavigate } from 'react-router-dom';
@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 const Post = ({ post, jwt, handleEditPost, handleDeletePost, onCommentUpdate, fetchLikedUsers }) => {
     const decodedToken = jwtDecode(jwt);
     const userId = decodedToken.id;
+    const navigate = useNavigate();
 
     const [isLiked, setIsLiked] = useState(post.likes.includes(userId));
     const [likeCount, setLikeCount] = useState(post.num_like);
@@ -15,7 +16,6 @@ const Post = ({ post, jwt, handleEditPost, handleDeletePost, onCommentUpdate, fe
     const [isLikesModalVisible, setIsLikesModalVisible] = useState(false);
     const [likedUsers, setLikedUsers] = useState([]);
     const [loadingLikes, setLoadingLikes] = useState(false);
-    const navigate = useNavigate();
 
     const handleLike = async () => {
         try {
@@ -51,10 +51,10 @@ const Post = ({ post, jwt, handleEditPost, handleDeletePost, onCommentUpdate, fe
         if (onCommentUpdate) onCommentUpdate(updatedComments);
     };
 
-    const handleProfileNavigation = () => {
-        console.log('Navigating to profile:', post.user_id?._id);
+    const handleProfileNavigation = (e) => {
+        e.preventDefault(); // Prevent default behavior (e.g., page refresh)
         if (post.user_id?._id) {
-            navigate(`/profile`);
+            navigate(`/profile/${post.user_id._id}`); // Navigate to the post author's profile
         } else {
             console.error('User ID is missing');
         }
@@ -112,6 +112,8 @@ const Post = ({ post, jwt, handleEditPost, handleDeletePost, onCommentUpdate, fe
                     </div>
                 )}
             </div>
+
+            {/* Integrate the Comment component */}
             <Comment
                 comments={postComments}
                 postId={post._id}

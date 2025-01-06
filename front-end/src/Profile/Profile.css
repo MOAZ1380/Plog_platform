@@ -1,76 +1,72 @@
+:root {
+    --primary-color: #4a90e2;
+    --primary-hover-color: #0056b3;
+    --background-color: #f8f9fa;
+    --text-color: #333;
+    --border-color: #ddd;
+    --border-radius: 8px;
+    --box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    --transition-speed: 0.3s;
+}
+
 .profile-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
     padding: 20px;
-    background-color: #f9f9f9;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    max-width: 800px;
-    margin: 20px auto;
+    font-family: Arial, sans-serif;
+    color: var(--text-color);
 }
 
 .header {
     display: flex;
     justify-content: flex-end;
-    width: 100%;
-    padding: 10px;
-    background-color: #fff;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    border-radius: 10px;
     margin-bottom: 20px;
 }
 
-.profile-icon {
-    position: relative;
-    cursor: pointer;
-}
-
-.profile-icon img {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    object-fit: cover;
-}
-
-.dropdown-menu {
-    position: absolute;
-    right: 0;
-    background-color: #fff;
-    border-radius: 5px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    display: flex;
-    flex-direction: column;
-    min-width: 150px;
-    z-index: 10;
-}
-
-.dropdown-menu button {
-    padding: 10px;
+.edit-profile-button {
+    background-color: var(--primary-color);
+    color: white;
     border: none;
-    background: none;
-    text-align: left;
+    padding: 10px 20px;
+    border-radius: var(--border-radius);
     cursor: pointer;
-    color: #333;
+    font-size: 14px;
+    transition: background-color var(--transition-speed) ease;
 }
 
-.dropdown-menu button:hover {
-    background-color: #f1f1f1;
+.edit-profile-button:hover {
+    background-color: var(--primary-hover-color);
 }
 
 .profile-content {
     display: flex;
     align-items: center;
-    width: 100%;
     margin-bottom: 20px;
 }
 
-.profile-photo img {
+.profile-photo {
     width: 100px;
     height: 100px;
     border-radius: 50%;
-    object-fit: cover;
+    overflow: hidden;
     margin-right: 20px;
+}
+
+.profile-photo img,
+.profile-photo .default-avatar {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.default-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--primary-color);
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
 }
 
 .profile-info {
@@ -80,7 +76,6 @@
 .profile-info h2 {
     margin: 0;
     font-size: 24px;
-    color: #333;
 }
 
 .profile-info p {
@@ -96,59 +91,71 @@
 
 .edit-form input {
     padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 14px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
 }
 
 .edit-form button {
     padding: 8px 16px;
-    border: none;
-    border-radius: 4px;
-    background-color: #1a73e8;
+    background-color: var(--primary-color);
     color: white;
+    border: none;
+    border-radius: var(--border-radius);
     cursor: pointer;
-    font-size: 14px;
+    transition: background-color var(--transition-speed) ease;
 }
 
 .edit-form button:hover {
-    background-color: #1557b0;
+    background-color: var(--primary-hover-color);
 }
 
-.posts-section {
-    width: 100%;
+.user-posts {
     margin-top: 20px;
 }
 
-.posts-section h3 {
-    font-size: 20px;
-    color: #333;
+.user-posts h3 {
     margin-bottom: 10px;
 }
 
-.post-item {
-    background-color: #fff;
+.post {
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
     padding: 15px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 15px;
+    background-color: white;
+    box-shadow: var(--box-shadow);
+}
+
+.post-meta {
+    font-size: 14px;
+    color: #666;
     margin-bottom: 10px;
 }
 
-.post-item p {
-    margin: 0;
-    color: #333;
+.post p {
+    margin: 10px 0;
 }
 
-.post-date {
-    font-size: 12px;
-    color: #666;
-    margin-top: 5px;
-}
-
-.post-photo {
-    width: 100%;
-    max-height: 300px;
-    object-fit: cover;
-    border-radius: 8px;
+.post img {
+    max-width: 100%;
+    border-radius: var(--border-radius);
     margin-top: 10px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .header {
+        padding: 10px;
+    }
+
+    .profile-content {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .profile-photo {
+        margin-right: 0;
+        margin-bottom: 15px;
+    }
 }

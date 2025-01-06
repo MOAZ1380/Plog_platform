@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
 import Comment from '../Comment/Comment';
 import './Post.css';
@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 const Post = ({ post, jwt, handleEditPost, handleDeletePost, onCommentUpdate, fetchLikedUsers }) => {
     const decodedToken = jwtDecode(jwt);
     const userId = decodedToken.id;
+    const navigate = useNavigate();
 
     const [isLiked, setIsLiked] = useState(post.likes.includes(userId));
     const [likeCount, setLikeCount] = useState(post.num_like);
@@ -15,7 +16,6 @@ const Post = ({ post, jwt, handleEditPost, handleDeletePost, onCommentUpdate, fe
     const [isLikesModalVisible, setIsLikesModalVisible] = useState(false);
     const [likedUsers, setLikedUsers] = useState([]);
     const [loadingLikes, setLoadingLikes] = useState(false);
-    const navigate = useNavigate();
 
     const handleLike = async () => {
         try {
@@ -25,7 +25,6 @@ const Post = ({ post, jwt, handleEditPost, handleDeletePost, onCommentUpdate, fe
 
             await axios.post(endpoint, {}, { headers: { Authorization: `Bearer ${jwt}` } });
 
-            // Update state optimistically
             setIsLiked(!isLiked);
             setLikeCount(isLiked ? likeCount - 1 : likeCount + 1);
         } catch (error) {
@@ -38,7 +37,7 @@ const Post = ({ post, jwt, handleEditPost, handleDeletePost, onCommentUpdate, fe
         setLoadingLikes(true);
         try {
             const users = await fetchLikedUsers(post._id);
-            setLikedUsers(users || []); // Fallback to empty array
+            setLikedUsers(users || []);
         } catch (error) {
             console.error('Error fetching liked users:', error.response?.data || error.message);
         } finally {
@@ -51,10 +50,10 @@ const Post = ({ post, jwt, handleEditPost, handleDeletePost, onCommentUpdate, fe
         if (onCommentUpdate) onCommentUpdate(updatedComments);
     };
 
-    const handleProfileNavigation = () => {
-        console.log('Navigating to profile:', post.user_id?._id);
+    const handleProfileNavigation = (e) => {
+        e.preventDefault();
         if (post.user_id?._id) {
-            navigate(`/profile`);
+            navigate(`/profile/${post.user_id._id}`); 
         } else {
             console.error('User ID is missing');
         }
@@ -112,6 +111,7 @@ const Post = ({ post, jwt, handleEditPost, handleDeletePost, onCommentUpdate, fe
                     </div>
                 )}
             </div>
+
             <Comment
                 comments={postComments}
                 postId={post._id}

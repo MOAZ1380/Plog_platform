@@ -132,10 +132,110 @@ const get_user_by_id = async (req, res, next) => {
 };
 
 
+const update_profile = asyncWrapper(
+    async (req, res, next) => {
+        try {
+            const userId = req.user.id;
+            const { currentPassword, newPassword, confirmPassword, ...updateData } = req.body;
+
+            // Find the user
+            const user = await User.findById(userId);
+            if (!user) {
+                return next(AppError.create("User not found", 404, httpstatus.FAIL));
+            }
+
+            // Handle password update if newPassword is provided
+            if (newPassword) {
+                if (!currentPassword) {
+                    return next(AppError.create("Current password is required", 400, httpstatus.FAIL));
+                }
+
+                const isPasswordMatch = await bcrypt.compare(currentPassword, user.password);
+                if (!isPasswordMatch) {
+                    return next(AppError.create("Current password is incorrect", 400, httpstatus.FAIL));
+                }
+
+                if (newPassword !== confirmPassword) {
+                    return next(AppError.create("New password and confirmation do not match", 400, httpstatus.FAIL));
+                }
+
+                user.password = await bcrypt.hash(newPassword, 10);
+            }
+
+            // Validate and update email if provided
+            if (updateData.email) {
+                if (!validator.isEmail(updateData.email)) {
+                    return next(AppError.create("Invalid email", 400, httpstatus.FAIL));
+                }
+
+                const existingUser = await User.findOne({ email: updateData.email });
+                if (existingUser && existingUser.id !== userId) {
+                    return next(AppError.create("Email already in use by another user", 400, httpstatus.FAIL));
+                }
+            }
+
+            // Update photo if a file is uploaded
+            if (req.file) {
+                updateData.photo = req.file.filename;
+            }
+
+            // Update user fields
+            Object.keys(updateData).forEach(key => {
+                if (updateData[key] !== undefined) {
+                    user[key] = updateData[key];
+                }
+            });
+
+            // Save the updated user
+            await user.save();
+
+            res.status(200).json({
+                status: httpstatus.SUCCESS,
+                data: { user },
+            });
+        } catch (error) {
+            console.error('Error in update_profile:', error);
+            next(AppError.create("Internal server error", 500, httpstatus.ERROR));
+        }
+    }
+);
+
+const search_user = asyncWrapper(async (req, res, next) => {
+    const { searchTerm } = req.params;
+
+    if (!searchTerm || searchTerm.trim() === '') {
+        return res.status(400).json({
+            status: httpstatus.FAIL,
+            message: 'Search term is required',
+        });
+    }
+
+    const users = await User.find({
+        $or: [
+            { firstName: { $regex: searchTerm, $options: 'i' } },
+            { lastName: { $regex: searchTerm, $options: 'i' } },
+            { email: { $regex: searchTerm, $options: 'i' } },
+        ],
+    }).select('-password');
+
+    if (!users || users.length === 0) {
+        return res.status(404).json({
+            status: httpstatus.FAIL,
+            message: 'No users found matching the search term',
+        });
+    }
+
+    res.status(200).json({
+        status: httpstatus.SUCCESS,
+        data: users,
+    });
+});
 
 module.exports = {
     user_register,
     user_login,
     delete_account,
     get_user_by_id,
+    update_profile,
+    search_user,
 };

@@ -19,5 +19,12 @@ router.route('/delete_account')
 router.route('/:userId')
     .get(vrifytoken, user_controler.get_user_by_id);
 
+router.route('/update_profile')
+    .patch(vrifytoken, upload.single('photo'), user_controler.update_profile);
+
+router.route('/search/:searchTerm')
+    .get(vrifytoken, user_controler.search_user);
+
+
 
 module.exports = router;

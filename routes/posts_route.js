@@ -22,7 +22,11 @@ router.route('/delete_update/:post_id')
 router.route('/GetMyPost')
     .get(vrifytoken, post_controler.my_posts);
 
+router.route('/GetUserPost/:UserId')
+    .get(vrifytoken, post_controler.get_user_post);
 
+router.route('/search/:searchTerm')
+    .get(vrifytoken, post_controler.search_post);
 
 
 module.exports = router;

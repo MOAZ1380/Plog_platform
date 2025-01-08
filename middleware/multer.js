@@ -16,8 +16,6 @@ function fileFilter (req, file, cb) {
     }
 }
 
-
-
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         // console.log(req.originalUrl);
@@ -32,8 +30,6 @@ const storage = multer.diskStorage({
         cb(null, newFilename);
     }
 });
-
-
 
 const upload = multer({ storage: storage,
     fileFilter,

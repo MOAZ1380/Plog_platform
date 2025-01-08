@@ -3,7 +3,8 @@ const Post = require('../models/Posts_Schema');
 const User = require('../models/Users_Schema'); 
 const AppError = require('../utils/AppError')
 const httpstatus = require('../utils/http_status');
-const verifyOwnership = asyncWrapper(async (req, res, next) => {  // Verify ownership of this property 
+
+const verifyOwnership = asyncWrapper(async (req, res, next) => { 
     const { post_id } = req.params;
     const userId = req.user.id;
 

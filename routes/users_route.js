@@ -20,6 +20,4 @@ router.route('/update_profile')
     .patch(vrifytoken, upload.single('photo'), user_controler.update_profile)
 
 
-
-
 module.exports = router;

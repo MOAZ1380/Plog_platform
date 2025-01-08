@@ -57,7 +57,6 @@ const remove_like = asyncWrapper(
     }
 );
 
-
 const fetch_liked_post = asyncWrapper(
     async (req, res, next) => {
         const { Postid } = req.params;
@@ -108,8 +107,6 @@ const fetch_liked_post = asyncWrapper(
         });
     }
 );
-
-
 
 
 

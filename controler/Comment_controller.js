@@ -5,7 +5,6 @@ const asyncWrapper = require('../middleware/asyncWrapper');
 const AppError = require('../utils/AppError');
 const httpstatus = require('../utils/http_status');
 
-// main and my_profile page to add comment
 const add_comment = asyncWrapper(
     async (req, res, next) => {
         const userId = req.user.id;
@@ -41,8 +40,6 @@ const add_comment = asyncWrapper(
     }
 );
 
-
-// main and my_profile page to update comment
 const update_comment = asyncWrapper(
     async (req, res, next) => {
         const userId = req.user.id;
@@ -83,9 +80,6 @@ const update_comment = asyncWrapper(
         });
     }
 );
-
-
-
 
 const delete_comment = asyncWrapper(
     async (req, res, next) => {

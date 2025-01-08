@@ -98,7 +98,6 @@ const my_posts = asyncWrapper(
     }
 );
 
-
 const update_my_post = asyncWrapper(
     async (req, res, next) => {
         const { content } = req.body;
@@ -118,7 +117,6 @@ const update_my_post = asyncWrapper(
             updatedPost: req.post,
         });
 });
-
 
 const delete_my_post = asyncWrapper(
     async (req, res, next) => {
@@ -187,8 +185,47 @@ const get_user_post = asyncWrapper(
     }
 );
 
+const search_post = asyncWrapper(async (req, res, next) => {
+    const { SearchPost } = req.params;
 
+        if (!post || post.trim() === '') {
+            return res.status(400).json({
+                status: httpstatus.FAIL,
+                message: 'Search term is required',
+            });
+        }
 
+        const posts = await Post.find({ content: { $regex: post, $options: 'i' } })
+            .populate({
+                path: 'user_id',
+                select: 'firstName lastName photo',
+            })
+            .populate({
+                path: 'comments', 
+                populate: {
+                    path: 'user_id',
+                    select: 'firstName lastName photo',
+                },
+            })
+            .populate({
+                path: 'likes', 
+                select: 'firstName lastName photo',
+            })
+            .exec();
+
+        if (!posts || posts.length === 0) {
+            return res.status(404).json({
+                status: httpstatus.FAIL,
+                message: 'No posts found matching the search term',
+            });
+        }
+
+        res.status(200).json({
+            status: httpstatus.SUCCESS,
+            data: posts,
+        });
+
+});
 
 
 
@@ -199,4 +236,5 @@ module.exports = {
     update_my_post,
     delete_my_post,
     get_user_post,
+    search_post
 }

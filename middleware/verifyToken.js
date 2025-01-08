@@ -4,7 +4,6 @@ const User = require('../models/Users_Schema');
 const asyncWrapper = require('../middleware/asyncWrapper');
 
 
-
 const verifyToken = asyncWrapper(
     async (req, res, next) => {
     const authHeader = req.headers['Authorization'] || req.headers['authorization'];
@@ -32,5 +31,6 @@ const verifyToken = asyncWrapper(
         req.user = decodedToken;
         next();
 });
+
 
 module.exports = verifyToken;

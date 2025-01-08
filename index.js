@@ -1,7 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
-require('dotenv').config()    // to use env(protected)
-const cors = require('cors');      //  for fronted because port is different
+require('dotenv').config() 
+const cors = require('cors');     
 const path = require('path');
 
 const user_router = require('./routes/users_route');

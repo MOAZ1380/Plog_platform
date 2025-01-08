@@ -5,4 +5,3 @@ module.exports = (asyncFn) => {
         });
     }
 }
-// handle try catch to Prevent recurrence

@@ -146,11 +146,6 @@ const update_profile = asyncWrapper(
 );
 
 
-
-
-    
-
-
 module.exports = {
     user_register,
     user_login,

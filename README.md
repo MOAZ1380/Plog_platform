@@ -581,3 +581,7 @@ Success (200):
 
 When you change the email, you need to log in again, if you change the firstName, lastName, photo, or password, you do not need to log in again.
 
+
+
+
+http://localhost:3000/api/posts/search/:SearchPost     ---> http://localhost:3000/api/posts/search/hello

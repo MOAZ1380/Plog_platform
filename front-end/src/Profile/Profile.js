@@ -20,7 +20,6 @@ const Profile = () => {
     });
     const navigate = useNavigate();
     const { userId } = useParams();
-
     const [loggedInUserId, setLoggedInUserId] = useState(null);
 
     useEffect(() => {
@@ -128,14 +127,6 @@ const Profile = () => {
 
     return (
         <div className="profile-container">
-            {loggedInUserId === userId && (
-                <div className="header">
-                    <button className="edit-profile-button" onClick={() => setIsEditing(true)}>
-                        Edit Profile
-                    </button>
-                </div>
-            )}
-
             <div className="profile-content">
                 <div className="profile-photo">
                     {user.photo ? (
@@ -148,63 +139,70 @@ const Profile = () => {
                     )}
                 </div>
                 <div className="profile-info">
-                    {isEditing ? (
-                        <div className="edit-form">
-                            <input
-                                type="text"
-                                name="firstName"
-                                value={formData.firstName}
-                                onChange={handleInputChange}
-                                placeholder="First Name"
-                            />
-                            <input
-                                type="text"
-                                name="lastName"
-                                value={formData.lastName}
-                                onChange={handleInputChange}
-                                placeholder="Last Name"
-                            />
-                            <input
-                                type="email"
-                                name="email"
-                                value={formData.email}
-                                onChange={handleInputChange}
-                                placeholder="Email"
-                            />
-                            <input
-                                type="password"
-                                name="currentPassword"
-                                value={formData.currentPassword}
-                                onChange={handleInputChange}
-                                placeholder="Current Password"
-                            />
-                            <input
-                                type="password"
-                                name="newPassword"
-                                value={formData.newPassword}
-                                onChange={handleInputChange}
-                                placeholder="New Password"
-                            />
-                            <input
-                                type="password"
-                                name="confirmPassword"
-                                value={formData.confirmPassword}
-                                onChange={handleInputChange}
-                                placeholder="Confirm New Password"
-                            />
-                            <input
-                                type="file"
-                                name="photo"
-                                onChange={handleFileChange}
-                            />
-                            <button onClick={handleSave}>Save</button>
-                            <button onClick={() => setIsEditing(false)}>Cancel</button>
-                        </div>
-                    ) : (
-                        <>
-                            <h2>{user.firstName} {user.lastName}</h2>
-                            <p>Joined: {formatDate(user.createdAt)}</p>
-                        </>
+                    <div className="profile-info-content">
+                        {isEditing ? (
+                            <div className="edit-form">
+                                <input
+                                    type="text"
+                                    name="firstName"
+                                    value={formData.firstName}
+                                    onChange={handleInputChange}
+                                    placeholder="First Name"
+                                />
+                                <input
+                                    type="text"
+                                    name="lastName"
+                                    value={formData.lastName}
+                                    onChange={handleInputChange}
+                                    placeholder="Last Name"
+                                />
+                                <input
+                                    type="email"
+                                    name="email"
+                                    value={formData.email}
+                                    onChange={handleInputChange}
+                                    placeholder="Email"
+                                />
+                                <input
+                                    type="password"
+                                    name="currentPassword"
+                                    value={formData.currentPassword}
+                                    onChange={handleInputChange}
+                                    placeholder="Current Password"
+                                />
+                                <input
+                                    type="password"
+                                    name="newPassword"
+                                    value={formData.newPassword}
+                                    onChange={handleInputChange}
+                                    placeholder="New Password"
+                                />
+                                <input
+                                    type="password"
+                                    name="confirmPassword"
+                                    value={formData.confirmPassword}
+                                    onChange={handleInputChange}
+                                    placeholder="Confirm New Password"
+                                />
+                                <input
+                                    type="file"
+                                    name="photo"
+                                    onChange={handleFileChange}
+                                />
+                                <button onClick={handleSave}>Save</button>
+                                <button onClick={() => setIsEditing(false)}>Cancel</button>
+                            </div>
+                        ) : (
+                            <>
+                                <h2>{user.firstName} {user.lastName}</h2>
+                                <p>Joined: {formatDate(user.createdAt)}</p>
+                            </>
+                        )}
+                    </div>
+                    {loggedInUserId === userId && !isEditing && (
+                        <button className="edit-profile-button" onClick={() => setIsEditing(true)}>
+                            Edit Profile
+                        </button>
                     )}
                 </div>
             </div>

@@ -17,26 +17,7 @@
     color: var(--text-color);
 }
 
-.header {
-    display: flex;
-    justify-content: flex-end;
-    margin-bottom: 20px;
-}
-
-.edit-profile-button {
-    background-color: var(--primary-color);
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: var(--border-radius);
-    cursor: pointer;
-    font-size: 14px;
-    transition: background-color var(--transition-speed) ease;
-}
-
-.edit-profile-button:hover {
-    background-color: var(--primary-hover-color);
-}
+/* Remove the header class since we're moving the button */
 
 .profile-content {
     display: flex;
@@ -71,6 +52,13 @@
 
 .profile-info {
     flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.profile-info-content {
+    flex: 1;
 }
 
 .profile-info h2 {
@@ -83,10 +71,28 @@
     color: #666;
 }
 
+.edit-profile-button {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color var(--transition-speed) ease;
+    margin-left: 20px;
+    white-space: nowrap;
+}
+
+.edit-profile-button:hover {
+    background-color: var(--primary-hover-color);
+}
+
 .edit-form {
     display: flex;
     flex-direction: column;
     gap: 10px;
+    width: 100%;
 }
 
 .edit-form input {
@@ -144,10 +150,6 @@
 
 /* Responsive Design */
 @media (max-width: 768px) {
-    .header {
-        padding: 10px;
-    }
-
     .profile-content {
         flex-direction: column;
         align-items: center;
@@ -157,5 +159,14 @@
     .profile-photo {
         margin-right: 0;
         margin-bottom: 15px;
+    }
+
+    .profile-info {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .edit-profile-button {
+        margin-left: 0;
     }
 }

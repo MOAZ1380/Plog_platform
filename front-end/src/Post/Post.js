@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Comment from '../Comment/Comment';
 import './Post.css';
@@ -12,10 +12,26 @@ const Post = ({ post, jwt, handleEditPost, handleDeletePost, onCommentUpdate, fe
 
     const [isLiked, setIsLiked] = useState(post.likes.includes(userId));
     const [likeCount, setLikeCount] = useState(post.num_like);
-    const [postComments, setPostComments] = useState(post.comments || []);
     const [isLikesModalVisible, setIsLikesModalVisible] = useState(false);
     const [likedUsers, setLikedUsers] = useState([]);
     const [loadingLikes, setLoadingLikes] = useState(false);
+    const [comments, setComments] = useState([]);
+
+    // Fetch comments for the post
+    useEffect(() => {
+        const fetchComments = async () => {
+            try {
+                console.log('Fetching comments for post ID:', post._id); // Debugging
+                const response = await axios.get(`http://localhost:3000/api/posts/${post._id}/comment`, {
+                    headers: { Authorization: `Bearer ${jwt}` },
+                });
+                setComments(response.data.data || []); // Default to an empty array
+            } catch (error) {
+                console.error('Error fetching comments:', error);
+            }
+        };
+        fetchComments();
+    }, [post, jwt]); // Add post and jwt as dependencies
 
     const handleLike = async () => {
         try {
@@ -45,11 +61,6 @@ const Post = ({ post, jwt, handleEditPost, handleDeletePost, onCommentUpdate, fe
         }
     };
 
-    const handleCommentUpdate = (updatedComments) => {
-        setPostComments(updatedComments);
-        if (onCommentUpdate) onCommentUpdate(updatedComments);
-    };
-
     const handleProfileNavigation = (e) => {
         e.preventDefault();
         if (post.user_id?._id) {
@@ -68,13 +79,6 @@ const Post = ({ post, jwt, handleEditPost, handleDeletePost, onCommentUpdate, fe
                             <img
                                 src={`http://localhost:3000/uploads/Profile_photo/${post.user_id.photo}`}
                                 alt="User Avatar"
-                                style={{
-                                    width: '100%',
-                                    height: '100%',
-                                    objectFit: 'cover',
-                                    objectPosition: 'center',
-                                    borderRadius: '50%',
-                                }}
                                 onError={(e) => {
                                     e.target.style.display = 'none';
                                     e.target.nextSibling.style.display = 'flex';
@@ -92,7 +96,15 @@ const Post = ({ post, jwt, handleEditPost, handleDeletePost, onCommentUpdate, fe
                     </div>
                     <div>
                         <span>{post.user_id?.firstName} {post.user_id?.lastName}</span>
-                        <span>{new Date(post.created_at).toLocaleString()}</span>
+                        <span>
+                            {new Date(post.created_at).toLocaleString([], {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                            })}
+                        </span>
                     </div>
                 </div>
             </div>
@@ -130,11 +142,11 @@ const Post = ({ post, jwt, handleEditPost, handleDeletePost, onCommentUpdate, fe
             </div>
 
             <Comment
-                comments={postComments}
+                comments={comments}
                 postId={post._id}
                 jwt={jwt}
                 userId={userId}
-                onCommentUpdate={handleCommentUpdate}
+                onCommentUpdate={(updatedComments) => setComments(updatedComments)}
             />
         </div>
     );

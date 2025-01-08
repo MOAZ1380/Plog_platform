@@ -1,14 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import './Comment.css';
 
 const Comment = ({ comments, postId, jwt, userId, onCommentUpdate }) => {
     const [newComment, setNewComment] = useState('');
-    const [editingComment, setEditingComment] = useState(null);
+    const [editingCommentId, setEditingCommentId] = useState(null);
     const [editContent, setEditContent] = useState('');
-    const [showDropdown, setShowDropdown] = useState(null);
+    const [dropdownOpen, setDropdownOpen] = useState(null);
     const navigate = useNavigate();
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownOpen && !event.target.closest('.dropdown')) {
+                setDropdownOpen(null);
+            }
+        };
+
+        document.addEventListener('click', handleClickOutside);
+        return () => {
+            document.removeEventListener('click', handleClickOutside);
+        };
+    }, [dropdownOpen]);
 
     const handleSubmitComment = async (e) => {
         e.preventDefault();
@@ -21,7 +34,7 @@ const Comment = ({ comments, postId, jwt, userId, onCommentUpdate }) => {
         try {
             const response = await axios.post(
                 `http://localhost:3000/api/posts/add_comment/${postId}/comment`,
-                { content: newComment, post_id: postId },
+                { content: newComment },
                 { headers: { Authorization: `Bearer ${jwt}` } }
             );
 
@@ -31,7 +44,7 @@ const Comment = ({ comments, postId, jwt, userId, onCommentUpdate }) => {
             }
         } catch (error) {
             console.error('Error adding comment:', error.response?.data || error.message);
-            alert(error.response?.data?.message || 'Failed to add comment. Please try again.');
+            alert('Failed to add comment. Please try again.');
         }
     };
 
@@ -50,9 +63,9 @@ const Comment = ({ comments, postId, jwt, userId, onCommentUpdate }) => {
 
             if (response.data.data) {
                 onCommentUpdate(response.data.data);
-                setEditingComment(null);
+                setEditingCommentId(null);
                 setEditContent('');
-                setShowDropdown(null);
+                setDropdownOpen(null);
             }
         } catch (error) {
             console.error('Error updating comment:', error.response?.data || error.message);
@@ -72,7 +85,7 @@ const Comment = ({ comments, postId, jwt, userId, onCommentUpdate }) => {
 
             if (response.data.data) {
                 onCommentUpdate(response.data.data);
-                setShowDropdown(null);
+                setDropdownOpen(null);
             }
         } catch (error) {
             console.error('Error deleting comment:', error.response?.data || error.message);
@@ -124,23 +137,23 @@ const Comment = ({ comments, postId, jwt, userId, onCommentUpdate }) => {
                             </div>
 
                             {comment.user_id._id === userId && (
-                                <div className="comment-actions">
+                                <div className="dropdown">
                                     <button
                                         className="dropdown-toggle"
                                         onClick={(e) => {
-                                            e.stopPropagation(); // Prevent event bubbling
-                                            setShowDropdown(showDropdown === comment._id ? null : comment._id);
+                                            e.stopPropagation();
+                                            setDropdownOpen(dropdownOpen === comment._id ? null : comment._id);
                                         }}
                                     >
                                         ⋮
                                     </button>
-                                    {showDropdown === comment._id && (
+                                    {dropdownOpen === comment._id && (
                                         <div className="dropdown-menu">
                                             <button
                                                 onClick={() => {
-                                                    setEditingComment(comment._id);
+                                                    setEditingCommentId(comment._id);
                                                     setEditContent(comment.content);
-                                                    setShowDropdown(null);
+                                                    setDropdownOpen(null);
                                                 }}
                                             >
                                                 Edit
@@ -154,7 +167,7 @@ const Comment = ({ comments, postId, jwt, userId, onCommentUpdate }) => {
                             )}
                         </div>
 
-                        {editingComment === comment._id ? (
+                        {editingCommentId === comment._id ? (
                             <div className="edit-comment-form">
                                 <input
                                     type="text"
@@ -166,7 +179,7 @@ const Comment = ({ comments, postId, jwt, userId, onCommentUpdate }) => {
                                     <button onClick={() => handleEditComment(comment._id)}>Save</button>
                                     <button
                                         onClick={() => {
-                                            setEditingComment(null);
+                                            setEditingCommentId(null);
                                             setEditContent('');
                                         }}
                                     >

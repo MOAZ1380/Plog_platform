@@ -17,7 +17,13 @@ const Feed = ({ jwt }) => {
             const response = await axios.get('http://localhost:3000/api/posts/GetAllPost', {
                 headers: { Authorization: `Bearer ${jwt}` },
             });
-            setPosts(response.data.data);
+
+            // Ensure posts have unique keys
+            const postsWithIds = response.data.data.map((post, index) => ({
+                ...post,
+                key: post._id || `post-${index}`, // Fallback key if _id is missing
+            }));
+            setPosts(postsWithIds);
         } catch (error) {
             console.error('Error fetching posts:', error.response?.data || error.message);
         }
@@ -48,11 +54,10 @@ const Feed = ({ jwt }) => {
                 formData,
                 { headers: { Authorization: `Bearer ${jwt}` } }
             );
-            setPosts([response.data.data.post, ...posts]);
+            setPosts([{ ...response.data.data.post, key: response.data.data.post._id }, ...posts]);
             setNewPostContent('');
             setNewPostPhoto(null);
-            // Clear the file name display
-            document.querySelector('.file-name').textContent = '';
+            document.querySelector('.file-name').textContent = ''; // Clear the file name display
         } catch (error) {
             console.error('Error adding post:', error.response?.data || error.message);
         }
@@ -105,7 +110,6 @@ const Feed = ({ jwt }) => {
                         accept="image/*"
                         onChange={(e) => {
                             setNewPostPhoto(e.target.files[0]);
-                            // Display the file name
                             const fileNameDisplay = document.querySelector('.file-name');
                             if (e.target.files[0]) {
                                 fileNameDisplay.textContent = e.target.files[0].name;
@@ -123,7 +127,7 @@ const Feed = ({ jwt }) => {
             </form>
             {posts.map((post) => (
                 <Post
-                    key={post._id}
+                    key={post.key} // Use unique key (post._id or fallback)
                     post={post}
                     jwt={jwt}
                     handleEditPost={handleEditPost}

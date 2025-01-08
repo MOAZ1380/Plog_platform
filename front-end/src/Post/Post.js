@@ -9,6 +9,7 @@ const Post = ({ post, jwt, handleEditPost, handleDeletePost, onCommentUpdate, fe
     const decodedToken = jwtDecode(jwt);
     const userId = decodedToken.id;
     const navigate = useNavigate();
+    const isAuthorized = userId === post.user_id?._id;
 
     const [isLiked, setIsLiked] = useState(post.likes.includes(userId));
     const [likeCount, setLikeCount] = useState(post.num_like);
@@ -16,22 +17,36 @@ const Post = ({ post, jwt, handleEditPost, handleDeletePost, onCommentUpdate, fe
     const [likedUsers, setLikedUsers] = useState([]);
     const [loadingLikes, setLoadingLikes] = useState(false);
     const [comments, setComments] = useState([]);
+    const [isEditing, setIsEditing] = useState(false);
+    const [editContent, setEditContent] = useState('');
+    const [dropdownOpen, setDropdownOpen] = useState(false);
 
-    // Fetch comments for the post
     useEffect(() => {
         const fetchComments = async () => {
             try {
-                console.log('Fetching comments for post ID:', post._id); // Debugging
                 const response = await axios.get(`http://localhost:3000/api/posts/${post._id}/comment`, {
                     headers: { Authorization: `Bearer ${jwt}` },
                 });
-                setComments(response.data.data || []); // Default to an empty array
+                setComments(response.data.data || []);
             } catch (error) {
                 console.error('Error fetching comments:', error);
             }
         };
         fetchComments();
-    }, [post, jwt]); // Add post and jwt as dependencies
+    }, [post, jwt]);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownOpen && !event.target.closest('.dropdown')) {
+                setDropdownOpen(false);
+            }
+        };
+
+        document.addEventListener('click', handleClickOutside);
+        return () => {
+            document.removeEventListener('click', handleClickOutside);
+        };
+    }, [dropdownOpen]);
 
     const handleLike = async () => {
         try {
@@ -61,12 +76,56 @@ const Post = ({ post, jwt, handleEditPost, handleDeletePost, onCommentUpdate, fe
         }
     };
 
+    const toggleDropdown = (e) => {
+        e.stopPropagation(); // Prevent closing the dropdown when clicking inside
+        setDropdownOpen((prev) => !prev);
+    };
+
+    const handleEdit = () => {
+        setIsEditing(true);
+        setEditContent(post.content);
+        setDropdownOpen(false);
+    };
+
+    const saveEdit = async () => {
+        if (!editContent.trim()) {
+            alert('Post content cannot be empty.');
+            return;
+        }
+
+        try {
+            const response = await axios.patch(
+                `http://localhost:3000/api/posts/delete_update/${post._id}`,
+                { content: editContent },
+                { headers: { Authorization: `Bearer ${jwt}` } }
+            );
+            handleEditPost(post._id, response.data.updatedPost.content);
+            setIsEditing(false);
+        } catch (error) {
+            console.error('Error updating post:', error.response?.data || error.message);
+            alert('Failed to update post. Please try again.');
+        }
+    };
+
+    const handleDelete = async () => {
+        const confirmDelete = window.confirm('Are you sure you want to delete this post?');
+        if (!confirmDelete) return;
+
+        try {
+            await axios.delete(`http://localhost:3000/api/posts/delete_update/${post._id}`, {
+                headers: { Authorization: `Bearer ${jwt}` },
+            });
+            handleDeletePost(post._id);
+        } catch (error) {
+            console.error('Error deleting post:', error.response?.data || error.message);
+            alert('Failed to delete post. Please try again.');
+        }
+    };
+
     const handleProfileNavigation = (e) => {
         e.preventDefault();
         if (post.user_id?._id) {
             navigate(`/profile/${post.user_id._id}`);
-        } else {
-            console.error('User ID is missing');
         }
     };
 
@@ -89,10 +148,6 @@ const Post = ({ post, jwt, handleEditPost, handleDeletePost, onCommentUpdate, fe
                                 {post.user_id?.firstName?.[0] || 'U'}
                             </div>
                         )}
-                        {/* Fallback default avatar */}
-                        <div className="default-avatar" style={{ display: 'none' }}>
-                            {post.user_id?.firstName?.[0] || 'U'}
-                        </div>
                     </div>
                     <div>
                         <span>{post.user_id?.firstName} {post.user_id?.lastName}</span>
@@ -107,26 +162,56 @@ const Post = ({ post, jwt, handleEditPost, handleDeletePost, onCommentUpdate, fe
                         </span>
                     </div>
                 </div>
-            </div>
-            <div className="post-content">
-                {post.photo && (
-                    <img
-                        src={`http://localhost:3000/uploads/Posts_photo/${post.photo}`}
-                        alt="Post"
-                    />
+                {isAuthorized && (
+                    <div className="dropdown">
+                        <button className="dropdown-toggle" onClick={toggleDropdown}>
+                            ⋮
+                        </button>
+                        {dropdownOpen && (
+                            <div className="dropdown-menu">
+                                <button onClick={handleEdit}>Edit</button>
+                                <button onClick={handleDelete}>Delete</button>
+                            </div>
+                        )}
+                    </div>
                 )}
-                <p>{post.content}</p>
             </div>
+            {isEditing ? (
+                <div className="edit-form">
+                    <textarea
+                        value={editContent}
+                        onChange={(e) => setEditContent(e.target.value)}
+                        className="edit-input"
+                        placeholder="What's on your mind?"
+                    />
+                    <div className="edit-buttons">
+                        <button onClick={saveEdit} className="save-button">Save</button>
+                        <button onClick={() => setIsEditing(false)} className="cancel-button">Cancel</button>
+                    </div>
+                </div>
+            ) : (
+                <div className="post-content">
+                    {post.photo && (
+                        <img
+                            src={`http://localhost:3000/uploads/Posts_photo/${post.photo}`}
+                            alt="Post"
+                        />
+                    )}
+                    <p>{post.content}</p>
+                </div>
+            )}
             <div className="post-actions">
-                <button onClick={handleLike}>
+                <button onClick={handleLike} className={`like-button ${isLiked ? 'liked' : ''}`}>
                     {isLiked ? 'Unlike' : 'Like'} ({likeCount})
                 </button>
-                <button onClick={showLikesModal}>View Likes</button>
-                {isLikesModalVisible && (
+                <button onClick={showLikesModal} className="like-button">View Likes</button>
+            </div>
+            {isLikesModalVisible && (
+                <div className="modal-overlay">
                     <div className="modal">
                         <h3>Liked By</h3>
                         {loadingLikes ? (
-                            <p>Loading...</p>
+                            <p className="loading-text">Loading...</p>
                         ) : (
                             <ul>
                                 {likedUsers.map((user) => (
@@ -138,9 +223,8 @@ const Post = ({ post, jwt, handleEditPost, handleDeletePost, onCommentUpdate, fe
                         )}
                         <button onClick={() => setIsLikesModalVisible(false)}>Close</button>
                     </div>
-                )}
-            </div>
-
+                </div>
+            )}
             <Comment
                 comments={comments}
                 postId={post._id}

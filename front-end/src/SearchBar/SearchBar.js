@@ -69,7 +69,7 @@ const SearchBar = () => {
 
     const handleResultClick = (type, id) => {
         setSearchTerm('');
-        setShowResults(false); 
+        setShowResults(false);
         navigate(type === 'post' ? `/post/${id}` : `/profile/${id}`);
     };
 
@@ -114,19 +114,21 @@ const SearchBar = () => {
                         </div>
                     )}
 
-                    {searchResults.posts.length > 0 && (
+                    {searchResults.users.length > 0 && (
                         <div className="search-bar__results-section">
-                            <h3 className="search-bar__results-section-title">Posts</h3>
-                            {searchResults.posts.map((post) => (
+                            <h3 className="search-bar__results-section-title">Users</h3>
+                            {searchResults.users.map((user) => (
                                 <div
-                                    key={post._id}
-                                    onClick={() => handleResultClick('post', post._id)}
+                                    key={user._id}
+                                    onClick={() => handleResultClick('user', user._id)}
                                     className="search-bar__result-item"
                                 >
-                                    <MessageSquare className="search-bar__result-icon" />
+                                    <User className="search-bar__result-icon" />
                                     <div>
-                                        <p className="search-bar__result-content">{post.content}</p>
-                                        <p className="search-bar__result-author">By: {post.user_id.firstName} {post.user_id.lastName}</p>
+                                        <p className="search-bar__result-name">
+                                            {user.firstName || 'Unknown'} {user.lastName || ''}
+                                        </p>
+                                        <p className="search-bar__result-email">{user.email || 'No email'}</p>
                                     </div>
                                 </div>
                             ))}

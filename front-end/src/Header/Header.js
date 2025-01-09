@@ -11,7 +11,6 @@ const Header = ({ jwt, setJwt }) => {
     const location = useLocation();
     const [user, setUser] = useState(null);
     const [dropdownTimeout, setDropdownTimeout] = useState(null);
-    const [showSearchBar, setShowSearchBar] = useState(false);
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -82,13 +81,7 @@ const Header = ({ jwt, setJwt }) => {
 
             {/* Search Button and SearchBar */}
             <div className="search-container">
-                <button
-                    className="search-button"
-                    onClick={() => setShowSearchBar((prev) => !prev)}
-                >
-                    🔍
-                </button>
-                {showSearchBar && <SearchBar />}
+                <SearchBar />
             </div>
 
             {/* Profile Icon and Dropdown */}

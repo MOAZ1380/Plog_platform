@@ -39,7 +39,7 @@ const Comment = ({ comments, postId, jwt, userId, onCommentUpdate }) => {
             );
 
             if (response.data.data) {
-                onCommentUpdate(response.data.data);
+                onCommentUpdate([...comments, response.data.data]);
                 setNewComment('');
             }
         } catch (error) {
@@ -62,7 +62,10 @@ const Comment = ({ comments, postId, jwt, userId, onCommentUpdate }) => {
             );
 
             if (response.data.data) {
-                onCommentUpdate(response.data.data);
+                const updatedComments = comments.map((comment) =>
+                    comment._id === commentId ? response.data.data : comment
+                );
+                onCommentUpdate(updatedComments);
                 setEditingCommentId(null);
                 setEditContent('');
                 setDropdownOpen(null);
@@ -84,7 +87,8 @@ const Comment = ({ comments, postId, jwt, userId, onCommentUpdate }) => {
             );
 
             if (response.data.data) {
-                onCommentUpdate(response.data.data);
+                const updatedComments = comments.filter((comment) => comment._id !== commentId);
+                onCommentUpdate(updatedComments);
                 setDropdownOpen(null);
             }
         } catch (error) {
@@ -116,10 +120,10 @@ const Comment = ({ comments, postId, jwt, userId, onCommentUpdate }) => {
                         <div className="comment-header">
                             <div
                                 className="comment-user-info"
-                                onClick={() => handleProfileNavigation(comment.user_id._id)}
+                                onClick={() => handleProfileNavigation(comment.user_id?._id)}
                             >
                                 <div className="comment-avatar">
-                                    {comment.user_id.photo ? (
+                                    {comment.user_id?.photo ? (
                                         <img
                                             src={`http://localhost:3000/uploads/Profile_photo/${comment.user_id.photo}`}
                                             alt="User Avatar"
@@ -127,16 +131,16 @@ const Comment = ({ comments, postId, jwt, userId, onCommentUpdate }) => {
                                         />
                                     ) : (
                                         <div className="default-avatar">
-                                            {comment.user_id.firstName?.[0] || 'U'}
+                                            {comment.user_id?.firstName?.[0] || 'U'}
                                         </div>
                                     )}
                                 </div>
                                 <span className="comment-username">
-                                    {comment.user_id.firstName} {comment.user_id.lastName}
+                                    {comment.user_id?.firstName} {comment.user_id?.lastName}
                                 </span>
                             </div>
 
-                            {comment.user_id._id === userId && (
+                            {comment.user_id?._id === userId && (
                                 <div className="dropdown">
                                     <button
                                         className="dropdown-toggle"

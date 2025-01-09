@@ -11,8 +11,10 @@ const Post = ({ post, jwt, handleEditPost, handleDeletePost, onCommentUpdate, fe
     const navigate = useNavigate();
     const isAuthorized = userId === post.user_id?._id;
 
+    // Initialize isLiked and likeCount based on the post's likes array
     const [isLiked, setIsLiked] = useState(post.likes.includes(userId));
     const [likeCount, setLikeCount] = useState(post.num_like);
+
     const [isLikesModalVisible, setIsLikesModalVisible] = useState(false);
     const [likedUsers, setLikedUsers] = useState([]);
     const [loadingLikes, setLoadingLikes] = useState(false);
@@ -54,10 +56,16 @@ const Post = ({ post, jwt, handleEditPost, handleDeletePost, onCommentUpdate, fe
                 ? `http://localhost:3000/api/posts/remove_like/${post._id}/unlike`
                 : `http://localhost:3000/api/posts/add_like/${post._id}/like`;
 
-            await axios.post(endpoint, {}, { headers: { Authorization: `Bearer ${jwt}` } });
+            const response = await axios.post(endpoint, {}, { headers: { Authorization: `Bearer ${jwt}` } });
 
+            // Update the local state based on the response
             setIsLiked(!isLiked);
             setLikeCount(isLiked ? likeCount - 1 : likeCount + 1);
+
+            // Optionally, update the post object in the parent component
+            if (response.data.data) {
+                handleEditPost(post._id, response.data.data);
+            }
         } catch (error) {
             console.error('Error toggling like:', error.response?.data || error.message);
         }

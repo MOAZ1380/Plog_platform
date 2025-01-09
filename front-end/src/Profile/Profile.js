@@ -3,6 +3,7 @@ import axios from 'axios';
 import './Profile.css';
 import { jwtDecode } from 'jwt-decode';
 import { useNavigate, useParams } from 'react-router-dom';
+import Post from '../Post/Post'; // Import the updated Post component
 
 const Profile = () => {
     const [user, setUser] = useState(null);
@@ -79,20 +80,20 @@ const Profile = () => {
         try {
             const token = localStorage.getItem('token');
             const data = new FormData();
-    
+
             const fields = ['firstName', 'lastName', 'email', 'currentPassword', 'newPassword', 'confirmPassword', 'photo'];
             fields.forEach(field => {
                 if (formData[field]) {
                     data.append(field, formData[field]);
                 }
             });
-    
+
             const response = await axios.patch(
                 `http://localhost:3000/api/users/update_profile`,
                 data,
                 { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' } }
             );
-    
+
             setUser(response.data.data.user);
             setIsEditing(false);
         } catch (error) {
@@ -115,6 +116,55 @@ const Profile = () => {
             month: 'long',
             day: 'numeric',
         });
+    };
+
+    const handleEditPost = async (postId, updatedContent) => {
+        try {
+            const response = await axios.patch(
+                `http://localhost:3000/api/posts/delete_update/${postId}`,
+                { content: updatedContent },
+                { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+            );
+            setPosts((prevPosts) =>
+                prevPosts.map((post) =>
+                    post._id === postId ? { ...post, content: response.data.updatedPost.content } : post
+                )
+            );
+        } catch (error) {
+            console.error('Error updating post:', error.response?.data || error.message);
+        }
+    };
+
+    const handleDeletePost = async (postId) => {
+        try {
+            await axios.delete(`http://localhost:3000/api/posts/delete_update/${postId}`, {
+                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+            });
+            setPosts((prevPosts) => prevPosts.filter((post) => post._id !== postId));
+        } catch (error) {
+            console.error('Error deleting post:', error.response?.data || error.message);
+        }
+    };
+
+    const fetchLikedUsers = async (postId) => {
+        try {
+            const response = await axios.get(
+                `http://localhost:3000/api/posts/fetch_likeAndComment/${postId}`,
+                { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+            );
+            return response.data.post.likes;
+        } catch (error) {
+            console.error('Error fetching liked users:', error.response?.data || error.message);
+            return [];
+        }
+    };
+
+    const handleCommentUpdate = (postId, updatedComments) => {
+        setPosts((prevPosts) =>
+            prevPosts.map((post) =>
+                post._id === postId ? { ...post, comments: updatedComments } : post
+            )
+        );
     };
 
     if (error) {
@@ -211,18 +261,15 @@ const Profile = () => {
                 <h3>Posts</h3>
                 {posts.length > 0 ? (
                     posts.map((post) => (
-                        <div key={post._id} className="post">
-                            <div className="post-meta">
-                                <span>{post.user_id?.firstName} {post.user_id?.lastName}</span> • {formatDate(post.created_at)}
-                            </div>
-                            <p>{post.content}</p>
-                            {post.photo && (
-                                <img
-                                    src={`http://localhost:3000/uploads/Posts_photo/${post.photo}`}
-                                    alt="Post"
-                                />
-                            )}
-                        </div>
+                        <Post
+                            key={post._id}
+                            post={post}
+                            jwt={localStorage.getItem('token')}
+                            handleEditPost={handleEditPost}
+                            handleDeletePost={handleDeletePost}
+                            fetchLikedUsers={fetchLikedUsers}
+                            onCommentUpdate={(updatedComments) => handleCommentUpdate(post._id, updatedComments)}
+                        />
                     ))
                 ) : (
                     <p>No posts Yet.</p>

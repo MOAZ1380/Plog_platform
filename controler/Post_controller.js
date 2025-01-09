@@ -32,7 +32,6 @@ const add_post = asyncWrapper(
         user.posts.push(newPost._id);
         await user.save();
 
-        // Populate the user_id field before sending response
         const populatedPost = await Post.findById(newPost._id)
             .populate('user_id', 'firstName lastName photo');
 
@@ -151,19 +150,20 @@ const get_user_post = asyncWrapper(
             { password: 0, posts: 0, _id: 0, __v: 0, likedPosts: 0 }
         );
 
-        const posts = await Post.find({ user_id: req.params.UserId }, { __v: 0, user_id: 0, _id: 0 })
+        const posts = await Post.find({ user_id: req.params.UserId })
             .skip(skip)
             .limit(page_size)
+            .populate('user_id', 'firstName lastName photo')
             .populate({
                 path: 'comments',
                 populate: {
                     path: 'user_id',
-                    select: 'firstName lastName'
+                    select: 'firstName lastName photo'
                 }
             })
             .populate({
                 path: 'likes',
-                select: 'firstName lastName'
+                select: 'firstName lastName photo'
             });
 
         const formattedPosts = posts.map(post => ({

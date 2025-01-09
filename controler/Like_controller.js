@@ -4,7 +4,6 @@ const asyncWrapper = require('../middleware/asyncWrapper');
 const AppError = require('../utils/AppError');
 const httpstatus = require('../utils/http_status');
 
-// main and my_profile page to add like
 const add_like = asyncWrapper(
     async (req, res, next) => {
         const userId = req.user.id;
@@ -20,18 +19,14 @@ const add_like = asyncWrapper(
             await post.save();
         }
 
-        const user = await User.findById(userId);
-        user.likedPosts.push(post);
-        await user.save();
-
         return res.json({
             status: httpstatus.SUCCESS,
-            message: "Liked successfully"
+            message: "Liked successfully",
+            data: post,
         });
     }
 );
 
-// main and my_profile page to remove like
 const remove_like = asyncWrapper(
     async (req, res, next) => {
         const userId = req.user.id;
@@ -47,14 +42,10 @@ const remove_like = asyncWrapper(
             await post.save();
         }
 
-
-        const user = await User.findById(userId);
-        user.likedPosts = user.likedPosts.filter((id) => id.toString() !== post.toString());
-        await user.save();
-
         return res.json({
             status: httpstatus.SUCCESS,
-            message: "Like removed successfully"
+            message: "Like removed successfully",
+            data: post,
         });
     }
 );

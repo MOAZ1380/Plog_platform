@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Register from '../Register/Register';
 import Login from '../Login/Login';
 import Feed from '../Feed/Feed';
 import Profile from '../Profile/Profile';
 import Header from '../Header/Header';
+import ScrollToTopButton from '../ScrollToTopButton/ScrollToTopButton';
 
 const App = () => {
   const [jwt, setJwt] = useState(null);
   const [isLogin, setIsLogin] = useState(true);
+  const location = useLocation();
 
   const handleLogin = (token) => {
     setJwt(token);
@@ -21,6 +23,8 @@ const App = () => {
   const handleRegisterSuccess = () => {
     setIsLogin(true);
   };
+
+  const isFeedOrProfile = location.pathname.startsWith('/feed') || location.pathname.startsWith('/profile');
 
   return (
     <div className="app-container">
@@ -58,6 +62,7 @@ const App = () => {
           </>
         )}
       </Routes>
+      {isFeedOrProfile && <ScrollToTopButton />}
     </div>
   );
 };

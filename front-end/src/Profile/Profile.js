@@ -1,13 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import axios from 'axios';
 import './Profile.css';
 import { jwtDecode } from 'jwt-decode';
 import { useNavigate, useParams } from 'react-router-dom';
-import Post from '../Post/Post'; // Import the updated Post component
+import Post from '../Post/Post';
+import { PostsContext } from '../Post/PostsContext';
 
 const Profile = () => {
     const [user, setUser] = useState(null);
-    const [posts, setPosts] = useState([]);
     const [error, setError] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
     const [formData, setFormData] = useState({
@@ -22,6 +22,8 @@ const Profile = () => {
     const navigate = useNavigate();
     const { userId } = useParams();
     const [loggedInUserId, setLoggedInUserId] = useState(null);
+
+    const { posts, updatePost, deletePost } = useContext(PostsContext);
 
     useEffect(() => {
         const fetchUserProfile = async () => {
@@ -45,18 +47,12 @@ const Profile = () => {
                     { headers: { Authorization: `Bearer ${token}` } }
                 );
 
-                const postsResponse = await axios.get(
-                    `http://localhost:3000/api/posts/GetUserPost/${userId}`,
-                    { headers: { Authorization: `Bearer ${token}` } }
-                );
-
                 const userData = userResponse.data.data;
                 if (!userData.username) {
                     userData.username = `${userData.firstName} ${userData.lastName}`;
                 }
 
                 setUser(userData);
-                setPosts(postsResponse.data.data || []);
             } catch (error) {
                 console.error('Error fetching user profile:', error);
                 setError(error.message);
@@ -66,6 +62,8 @@ const Profile = () => {
 
         fetchUserProfile();
     }, [userId, navigate]);
+
+    const userPosts = posts.filter((post) => post.user_id?._id === userId);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -118,34 +116,6 @@ const Profile = () => {
         });
     };
 
-    const handleEditPost = async (postId, updatedContent) => {
-        try {
-            const response = await axios.patch(
-                `http://localhost:3000/api/posts/delete_update/${postId}`,
-                { content: updatedContent },
-                { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
-            );
-            setPosts((prevPosts) =>
-                prevPosts.map((post) =>
-                    post._id === postId ? { ...post, content: response.data.updatedPost.content } : post
-                )
-            );
-        } catch (error) {
-            console.error('Error updating post:', error.response?.data || error.message);
-        }
-    };
-
-    const handleDeletePost = async (postId) => {
-        try {
-            await axios.delete(`http://localhost:3000/api/posts/delete_update/${postId}`, {
-                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-            });
-            setPosts((prevPosts) => prevPosts.filter((post) => post._id !== postId));
-        } catch (error) {
-            console.error('Error deleting post:', error.response?.data || error.message);
-        }
-    };
-
     const fetchLikedUsers = async (postId) => {
         try {
             const response = await axios.get(
@@ -160,11 +130,7 @@ const Profile = () => {
     };
 
     const handleCommentUpdate = (postId, updatedComments) => {
-        setPosts((prevPosts) =>
-            prevPosts.map((post) =>
-                post._id === postId ? { ...post, comments: updatedComments } : post
-            )
-        );
+        updatePost(postId, { comments: updatedComments });
     };
 
     if (error) {
@@ -259,16 +225,16 @@ const Profile = () => {
 
             <div className="user-posts">
                 <h3>Posts</h3>
-                {posts.length > 0 ? (
-                    posts.map((post) => (
+                {userPosts.length > 0 ? (
+                    userPosts.map((post) => (
                         <Post
                             key={post._id}
                             post={post}
                             jwt={localStorage.getItem('token')}
-                            handleEditPost={handleEditPost}
-                            handleDeletePost={handleDeletePost}
+                            handleEditPost={updatePost}
+                            handleDeletePost={deletePost}
                             fetchLikedUsers={fetchLikedUsers}
-                            onCommentUpdate={(updatedComments) => handleCommentUpdate(post._id, updatedComments)}
+                            onCommentUpdate={handleCommentUpdate}
                         />
                     ))
                 ) : (

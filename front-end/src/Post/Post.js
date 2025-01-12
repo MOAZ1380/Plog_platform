@@ -5,13 +5,12 @@ import './Post.css';
 import { jwtDecode } from 'jwt-decode';
 import { useNavigate } from 'react-router-dom';
 
-const Post = ({ post, jwt, handleEditPost, handleDeletePost, onCommentUpdate, fetchLikedUsers }) => {
+const Post = ({ post, jwt, handleEditPost, handleDeletePost, fetchLikedUsers }) => {
     const decodedToken = jwtDecode(jwt);
     const userId = decodedToken.id;
     const navigate = useNavigate();
     const isAuthorized = userId === post.user_id?._id;
 
-    // Initialize isLiked and likeCount based on the post's likes array
     const [isLiked, setIsLiked] = useState(post.likes.includes(userId));
     const [likeCount, setLikeCount] = useState(post.num_like);
 
@@ -37,6 +36,11 @@ const Post = ({ post, jwt, handleEditPost, handleDeletePost, onCommentUpdate, fe
         fetchComments();
     }, [post, jwt]);
 
+    const toggleDropdown = (e) => {
+        e.stopPropagation();
+        setDropdownOpen((prev) => !prev);
+    };
+
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (dropdownOpen && !event.target.closest('.dropdown')) {
@@ -55,17 +59,11 @@ const Post = ({ post, jwt, handleEditPost, handleDeletePost, onCommentUpdate, fe
             const endpoint = isLiked
                 ? `http://localhost:3000/api/posts/remove_like/${post._id}/unlike`
                 : `http://localhost:3000/api/posts/add_like/${post._id}/like`;
-
-            const response = await axios.post(endpoint, {}, { headers: { Authorization: `Bearer ${jwt}` } });
-
-            // Update the local state based on the response
+    
+            await axios.post(endpoint, {}, { headers: { Authorization: `Bearer ${jwt}` } });
+    
             setIsLiked(!isLiked);
             setLikeCount(isLiked ? likeCount - 1 : likeCount + 1);
-
-            // Optionally, update the post object in the parent component
-            if (response.data.data) {
-                handleEditPost(post._id, response.data.data);
-            }
         } catch (error) {
             console.error('Error toggling like:', error.response?.data || error.message);
         }
@@ -82,11 +80,6 @@ const Post = ({ post, jwt, handleEditPost, handleDeletePost, onCommentUpdate, fe
         } finally {
             setLoadingLikes(false);
         }
-    };
-
-    const toggleDropdown = (e) => {
-        e.stopPropagation(); // Prevent closing the dropdown when clicking inside
-        setDropdownOpen((prev) => !prev);
     };
 
     const handleEdit = () => {

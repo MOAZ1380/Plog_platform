@@ -1,33 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 import Post from '../Post/Post';
 import './Feed.css';
 import { jwtDecode } from 'jwt-decode';
+import { PostsContext } from '../Post/PostsContext';
 
 const Feed = ({ jwt }) => {
     const decodedToken = jwtDecode(jwt);
     const userId = decodedToken.id;
 
-    const [posts, setPosts] = useState([]);
+    const { posts, fetchPosts, addPost, updatePost, deletePost } = useContext(PostsContext);
+
     const [newPostContent, setNewPostContent] = useState('');
     const [newPostPhoto, setNewPostPhoto] = useState(null);
-
-    const fetchPosts = async () => {
-        try {
-            const response = await axios.get('http://localhost:3000/api/posts/GetAllPost', {
-                headers: { Authorization: `Bearer ${jwt}` },
-            });
-
-            // Ensure posts have unique keys
-            const postsWithIds = response.data.data.map((post, index) => ({
-                ...post,
-                key: post._id || `post-${index}`, // Fallback key if _id is missing
-            }));
-            setPosts(postsWithIds);
-        } catch (error) {
-            console.error('Error fetching posts:', error.response?.data || error.message);
-        }
-    };
 
     const fetchLikedUsersAndComments = async (postId) => {
         try {
@@ -54,46 +39,18 @@ const Feed = ({ jwt }) => {
                 formData,
                 { headers: { Authorization: `Bearer ${jwt}` } }
             );
-            setPosts([{ ...response.data.data.post, key: response.data.data.post._id }, ...posts]);
+            addPost(response.data.data.post);
             setNewPostContent('');
             setNewPostPhoto(null);
-            document.querySelector('.file-name').textContent = ''; // Clear the file name display
+            document.querySelector('.file-name').textContent = '';
         } catch (error) {
             console.error('Error adding post:', error.response?.data || error.message);
         }
     };
 
-    const handleEditPost = async (postId, updatedContent) => {
-        try {
-            const response = await axios.patch(
-                `http://localhost:3000/api/posts/delete_update/${postId}`,
-                { content: updatedContent },
-                { headers: { Authorization: `Bearer ${jwt}` } }
-            );
-            setPosts((prevPosts) =>
-                prevPosts.map((post) =>
-                    post._id === postId ? { ...post, content: response.data.updatedPost.content } : post
-                )
-            );
-        } catch (error) {
-            console.error('Error updating post:', error.response?.data || error.message);
-        }
-    };
-
-    const handleDeletePost = async (postId) => {
-        try {
-            await axios.delete(`http://localhost:3000/api/posts/delete_update/${postId}`, {
-                headers: { Authorization: `Bearer ${jwt}` },
-            });
-            setPosts((prevPosts) => prevPosts.filter((post) => post._id !== postId));
-        } catch (error) {
-            console.error('Error deleting post:', error.response?.data || error.message);
-        }
-    };
-
     useEffect(() => {
         fetchPosts();
-    }, []);
+    }, [fetchPosts]);
 
     return (
         <div className="feed">
@@ -127,11 +84,11 @@ const Feed = ({ jwt }) => {
             </form>
             {posts.map((post) => (
                 <Post
-                    key={post.key} // Use unique key (post._id or fallback)
+                    key={post.key}
                     post={post}
                     jwt={jwt}
-                    handleEditPost={handleEditPost}
-                    handleDeletePost={handleDeletePost}
+                    handleEditPost={updatePost}
+                    handleDeletePost={deletePost}
                     fetchLikedUsers={fetchLikedUsersAndComments}
                 />
             ))}

@@ -26,7 +26,6 @@
     margin-bottom: 20px;
 }
 
-/* Textarea Styling */
 .feed form textarea {
     width: 95%;
     height: 120px;
@@ -47,26 +46,18 @@
     box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
 }
 
-/* File Input Container */
 .file-input-container {
-    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
     margin-bottom: 10px;
 }
 
-/* Hide the default file input */
 .file-input-container input[type="file"] {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    opacity: 0;
-    cursor: pointer;
+    display: none; /* Hide the default file input */
 }
 
-/* Custom File Input Button */
-.file-input-container .custom-file-button {
-    display: inline-block;
+.custom-file-button {
     padding: 10px 20px;
     background-color: var(--primary-color);
     color: white;
@@ -78,39 +69,30 @@
     text-align: center;
 }
 
-.file-input-container .custom-file-button:hover {
+.custom-file-button:hover {
     background-color: var(--primary-hover-color);
 }
 
-/* File Name Display */
-.file-input-container .file-name {
-    margin-left: 10px;
+.file-name {
     font-size: 14px;
     color: var(--text-color);
 }
 
-/* Post Button Styling */
-.feed form button[type="submit"] {
-    padding: 12px 20px;
+.post-button {
+    padding: 10px 20px;
     background-color: var(--primary-color);
     color: white;
     border: none;
     border-radius: var(--border-radius);
     font-size: 16px;
-    font-weight: 500;
     cursor: pointer;
     transition: background-color var(--transition-speed) ease;
 }
 
-.feed form button[type="submit"]:hover {
+.post-button:hover {
     background-color: var(--primary-hover-color);
 }
 
-.feed form button[type="submit"]:active {
-    background-color: #004080;
-}
-
-/* Responsive Design */
 @media (max-width: 768px) {
     .feed {
         padding: 15px;
@@ -121,12 +103,8 @@
         font-size: 14px;
     }
 
-    .feed form button[type="submit"] {
-        font-size: 14px;
-        padding: 10px 16px;
-    }
-
-    .file-input-container .custom-file-button {
+    .custom-file-button,
+    .post-button {
         font-size: 14px;
         padding: 8px 16px;
     }
@@ -142,12 +120,8 @@
         font-size: 12px;
     }
 
-    .feed form button[type="submit"] {
-        font-size: 12px;
-        padding: 8px 12px;
-    }
-
-    .file-input-container .custom-file-button {
+    .custom-file-button,
+    .post-button {
         font-size: 12px;
         padding: 6px 12px;
     }

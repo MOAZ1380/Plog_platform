@@ -2,13 +2,9 @@ import React, { useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 import Post from '../Post/Post';
 import './Feed.css';
-import { jwtDecode } from 'jwt-decode';
 import { PostsContext } from '../Post/PostsContext';
 
 const Feed = ({ jwt }) => {
-    const decodedToken = jwtDecode(jwt);
-    const userId = decodedToken.id;
-
     const { posts, fetchPosts, addPost, updatePost, deletePost } = useContext(PostsContext);
 
     const [newPostContent, setNewPostContent] = useState('');
@@ -79,12 +75,12 @@ const Feed = ({ jwt }) => {
                         Choose File
                     </label>
                     <span className="file-name"></span>
+                    <button type="submit" className="post-button">Post</button>
                 </div>
-                <button type="submit">Post</button>
             </form>
             {posts.map((post) => (
                 <Post
-                    key={post.key}
+                    key={post._id}
                     post={post}
                     jwt={jwt}
                     handleEditPost={updatePost}

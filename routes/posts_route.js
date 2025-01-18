@@ -28,5 +28,8 @@ router.route('/GetUserPost/:UserId')
 router.route('/search/:searchTerm')
     .get(vrifytoken, post_controler.search_post);
 
+router.route('/:postId')
+    .get(vrifytoken, post_controler.get_post_by_id);
+
 
 module.exports = router;

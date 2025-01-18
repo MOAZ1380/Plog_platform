@@ -72,7 +72,7 @@ const Login = ({ onLogin }) => {
                 onLogin(data.data.my_token);
             }
 
-            navigate('/profile');
+            navigate('/Feed');
         } catch (error) {
             setServerError(error.message || 'An error occurred during login.');
         } finally {

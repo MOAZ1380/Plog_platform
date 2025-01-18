@@ -157,57 +157,59 @@ const Profile = () => {
                 <div className="profile-info">
                     <div className="profile-info-content">
                         {isEditing ? (
-                            <div className="edit-form">
-                                <input
-                                    type="text"
-                                    name="firstName"
-                                    value={formData.firstName}
-                                    onChange={handleInputChange}
-                                    placeholder="First Name"
-                                />
-                                <input
-                                    type="text"
-                                    name="lastName"
-                                    value={formData.lastName}
-                                    onChange={handleInputChange}
-                                    placeholder="Last Name"
-                                />
-                                <input
-                                    type="email"
-                                    name="email"
-                                    value={formData.email}
-                                    onChange={handleInputChange}
-                                    placeholder="Email"
-                                />
-                                <input
-                                    type="password"
-                                    name="currentPassword"
-                                    value={formData.currentPassword}
-                                    onChange={handleInputChange}
-                                    placeholder="Current Password"
-                                />
-                                <input
-                                    type="password"
-                                    name="newPassword"
-                                    value={formData.newPassword}
-                                    onChange={handleInputChange}
-                                    placeholder="New Password"
-                                />
-                                <input
-                                    type="password"
-                                    name="confirmPassword"
-                                    value={formData.confirmPassword}
-                                    onChange={handleInputChange}
-                                    placeholder="Confirm New Password"
-                                />
-                                <input
-                                    type="file"
-                                    name="photo"
-                                    onChange={handleFileChange}
-                                />
-                                <button onClick={handleSave}>Save</button>
-                                <button onClick={() => setIsEditing(false)}>Cancel</button>
-                            </div>
+                            <form>
+                                <div className="edit-form">
+                                    <input
+                                        type="text"
+                                        name="firstName"
+                                        value={formData.firstName}
+                                        onChange={handleInputChange}
+                                        placeholder="First Name"
+                                    />
+                                    <input
+                                        type="text"
+                                        name="lastName"
+                                        value={formData.lastName}
+                                        onChange={handleInputChange}
+                                        placeholder="Last Name"
+                                    />
+                                    <input
+                                        type="email"
+                                        name="email"
+                                        value={formData.email}
+                                        onChange={handleInputChange}
+                                        placeholder="Email"
+                                    />
+                                    <input
+                                        type="password"
+                                        name="currentPassword"
+                                        value={formData.currentPassword}
+                                        onChange={handleInputChange}
+                                        placeholder="Current Password"
+                                    />
+                                    <input
+                                        type="password"
+                                        name="newPassword"
+                                        value={formData.newPassword}
+                                        onChange={handleInputChange}
+                                        placeholder="New Password"
+                                    />
+                                    <input
+                                        type="password"
+                                        name="confirmPassword"
+                                        value={formData.confirmPassword}
+                                        onChange={handleInputChange}
+                                        placeholder="Confirm New Password"
+                                    />
+                                    <input
+                                        type="file"
+                                        name="photo"
+                                        onChange={handleFileChange}
+                                    />
+                                    <button onClick={handleSave}>Save</button>
+                                    <button onClick={() => setIsEditing(false)}>Cancel</button>
+                                </div>
+                            </form>
                         ) : (
                             <>
                                 <h2>{user.firstName} {user.lastName}</h2>

@@ -10,14 +10,13 @@
 }
 
 .profile-container {
-    max-width: 1200px;
+    max-width: 720px;
     margin: 0 auto;
     padding: 20px;
     font-family: Arial, sans-serif;
     color: var(--text-color);
 }
 
-/* Remove the header class since we're moving the button */
 
 .profile-content {
     display: flex;

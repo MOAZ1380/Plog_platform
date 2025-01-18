@@ -10,19 +10,6 @@ const Comment = ({ comments, postId, jwt, userId, onCommentUpdate }) => {
     const [dropdownOpen, setDropdownOpen] = useState(null);
     const navigate = useNavigate();
 
-    useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (dropdownOpen && !event.target.closest('.dropdown')) {
-                setDropdownOpen(null);
-            }
-        };
-
-        document.addEventListener('click', handleClickOutside);
-        return () => {
-            document.removeEventListener('click', handleClickOutside);
-        };
-    }, [dropdownOpen]);
-
     const handleSubmitComment = async (e) => {
         e.preventDefault();
 
@@ -47,6 +34,36 @@ const Comment = ({ comments, postId, jwt, userId, onCommentUpdate }) => {
             alert('Failed to add comment. Please try again.');
         }
     };
+
+    const toggleDropdown = (commentId, e) => {
+        e.stopPropagation();
+        setDropdownOpen(commentId === dropdownOpen ? null : commentId);
+
+        const dropdowns = document.querySelectorAll('.dropdown');
+        dropdowns.forEach(dropdown => {
+            if (dropdown.contains(e.target)) {
+                dropdown.classList.toggle('active');
+            } else {
+                dropdown.classList.remove('active');
+            }
+        });
+    };
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownOpen && !event.target.closest('.dropdown')) {
+                setDropdownOpen(null);
+                document.querySelectorAll('.dropdown').forEach(dropdown => {
+                    dropdown.classList.remove('active');
+                });
+            }
+        };
+
+        document.addEventListener('click', handleClickOutside);
+        return () => {
+            document.removeEventListener('click', handleClickOutside);
+        };
+    }, [dropdownOpen]);
 
     const handleEditComment = async (commentId) => {
         if (!editContent.trim()) {
@@ -111,7 +128,7 @@ const Comment = ({ comments, postId, jwt, userId, onCommentUpdate }) => {
                     placeholder="Add a comment..."
                     className="comment-input"
                 />
-                <button type="submit" className="comment-submit-btn">Post</button>
+                <button type="submit" className="comment-submit-btn">Comment</button>
             </form>
 
             <div className="comments-list">
@@ -127,27 +144,37 @@ const Comment = ({ comments, postId, jwt, userId, onCommentUpdate }) => {
                                         <img
                                             src={`http://localhost:3000/uploads/Profile_photo/${comment.user_id.photo}`}
                                             alt="User Avatar"
-                                            className="avatar-image"
+                                            onError={(e) => {
+                                                e.target.style.display = 'none';
+                                                e.target.nextSibling.style.display = 'flex';
+                                            }}
                                         />
-                                    ) : (
-                                        <div className="default-avatar">
-                                            {comment.user_id?.firstName?.[0] || 'U'}
-                                        </div>
-                                    )}
+                                    ) : null}
+                                    <div className="default-avatar" style={{ display: comment.user_id?.photo ? 'none' : 'flex' }}>
+                                        {comment.user_id?.firstName?.[0] || 'U'}
+                                    </div>
                                 </div>
-                                <span className="comment-username">
-                                    {comment.user_id?.firstName} {comment.user_id?.lastName}
-                                </span>
+                                <div className="comment-user-details">
+                                    <span className="comment-username">
+                                        {comment.user_id?.firstName} {comment.user_id?.lastName}
+                                    </span>
+                                    <span className="comment-date">
+                                        {new Date(comment.createdAt).toLocaleString([], {
+                                            year: 'numeric',
+                                            month: 'short',
+                                            day: 'numeric',
+                                            hour: '2-digit',
+                                            minute: '2-digit',
+                                        })}
+                                    </span>
+                                </div>
                             </div>
 
                             {comment.user_id?._id === userId && (
                                 <div className="dropdown">
                                     <button
                                         className="dropdown-toggle"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            setDropdownOpen(dropdownOpen === comment._id ? null : comment._id);
-                                        }}
+                                        onClick={(e) => toggleDropdown(comment._id, e)}
                                     >
                                         ⋮
                                     </button>
@@ -194,16 +221,6 @@ const Comment = ({ comments, postId, jwt, userId, onCommentUpdate }) => {
                         ) : (
                             <p className="comment-content">{comment.content}</p>
                         )}
-
-                        <span className="comment-date">
-                            {new Date(comment.createdAt).toLocaleString([], {
-                                year: 'numeric',
-                                month: 'short',
-                                day: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit',
-                            })}
-                        </span>
                     </div>
                 ))}
             </div>

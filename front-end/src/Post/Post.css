@@ -1,5 +1,3 @@
-/* Post.css */
-
 .post {
     background: #ffffff;
     border: 1px solid #e0e0e0;
@@ -7,6 +5,7 @@
     padding: 16px;
     margin-bottom: 20px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    max-width: 720px;
 }
 
 .post-header {
@@ -21,7 +20,6 @@
     align-items: center;
     cursor: pointer;
 }
-
 .user-avatar {
     position: relative;
     width: 50px;
@@ -73,19 +71,31 @@
     cursor: pointer;
     font-size: 20px;
     padding: 0;
+    color: #333;
 }
 
 .dropdown-menu {
     position: absolute;
     right: 0;
-    top: 100%; /* Correctly positions the dropdown below the button */
+    top: 100%;
     background-color: white;
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
-    box-shadow: var(--box-shadow);
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     z-index: 1000;
-    display: block; /* Ensures visibility */
-    min-width: 120px; /* Avoids very narrow dropdowns */
+    min-width: 120px;
+    display: flex; 
+    flex-direction: column;
+    gap: 4px;
+    padding: 8px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+.dropdown-menu.active {
+    opacity: 1;
+    visibility: visible;
 }
 
 .dropdown-menu button {
@@ -102,7 +112,7 @@
 }
 
 .dropdown-menu button:hover {
-    background-color: var(--background-color);
+    background-color: #f0f0f0;
 }
 
 .post-content {
@@ -128,8 +138,48 @@
     align-items: center;
     gap: 10px;
     margin-bottom: 16px;
-    
 }
+
+.liked-users-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.liked-user-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    border-bottom: 1px solid #eee;
+}
+
+.liked-user-item:last-child {
+    border-bottom: none;
+}
+
+.liked-user-info {
+    font-size: 14px;
+    color: #333;
+}
+
+.unlike-button {
+    background: #ff3d3d;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.unlike-button:hover {
+    background: #ff1a1a;
+}
+
 
 .like-button {
     background: #f0f0f0;
@@ -153,6 +203,10 @@
 
 .like-button:hover {
     background: #e0e0e0;
+}
+
+.like-button.liked:hover {
+    background: #ffb3b3;
 }
 
 .modal-overlay {
@@ -267,7 +321,6 @@
     background: #c0c0c0;
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
     .post-header {
         flex-direction: column;

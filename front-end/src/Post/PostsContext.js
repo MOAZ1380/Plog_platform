@@ -9,16 +9,26 @@ export const PostsProvider = ({ children }) => {
     const fetchPosts = async () => {
         try {
             const token = localStorage.getItem('token');
+            if (!token) {
+                console.error('No token found');
+                return;
+            }
+    
             const response = await axios.get('http://localhost:3000/api/posts/GetAllPost', {
                 headers: { Authorization: `Bearer ${token}` },
             });
+    
             const postsWithIds = response.data.data.map((post, index) => ({
                 ...post,
                 key: post._id || `post-${index}`,
             }));
             setPosts(postsWithIds);
         } catch (error) {
-            console.error('Error fetching posts:', error.response?.data || error.message);
+            console.error('Error fetching posts:', {
+                message: error.message,
+                response: error.response?.data,
+                status: error.response?.status,
+            });
         }
     };
 

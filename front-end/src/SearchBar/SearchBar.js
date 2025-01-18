@@ -1,13 +1,21 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, User, MessageSquare, Loader2 } from 'lucide-react';
+import axios from 'axios';
 import './SearchBar.css';
+
+const debounce = (func, wait) => {
+    let timeout;
+    return (...args) => {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), wait);
+    };
+};
 
 const SearchBar = () => {
     const [searchTerm, setSearchTerm] = useState('');
-    const [searchResults, setSearchResults] = useState({ posts: [], users: [] });
+    const [searchResults, setSearchResults] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [showResults, setShowResults] = useState(false); // Controls visibility of results dropdown
+    const [showResults, setShowResults] = useState(false);
     const searchRef = useRef(null);
     const navigate = useNavigate();
 
@@ -22,21 +30,10 @@ const SearchBar = () => {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            if (searchTerm) {
-                handleSearch();
-            } else {
-                setSearchResults({ posts: [], users: [] });
-            }
-        }, 500);
-
-        return () => clearTimeout(timer);
-    }, [searchTerm]);
-
-    const handleSearch = async () => {
-        if (!searchTerm.trim()) {
-            setSearchResults({ posts: [], users: [] });
+    const handleSearch = async (value) => {
+        if (value.length < 1) {
+            setSearchResults([]);
+            setShowResults(false);
             return;
         }
 
@@ -45,101 +42,105 @@ const SearchBar = () => {
 
         try {
             const token = localStorage.getItem('token');
-            const headers = { Authorization: `Bearer ${token}` };
 
-            const [postsResponse, usersResponse] = await Promise.all([
-                fetch(`http://localhost:3000/api/posts/search/${searchTerm}`, { headers }),
-                fetch(`http://localhost:3000/api/users/search/${searchTerm}`, { headers }),
-            ]);
+            const usersResponse = await axios.get(
+                `http://localhost:3000/api/users/search/${encodeURIComponent(value)}`,
+                {
+                    headers: { Authorization: `Bearer ${token}` },
+                }
+            );
+            const users = usersResponse.data.data.map((user) => ({
+                ...user,
+                type: 'user',
+            }));
 
-            const postsData = await postsResponse.json();
-            const usersData = await usersResponse.json();
+            const postsResponse = await axios.get(
+                `http://localhost:3000/api/posts/search/${encodeURIComponent(value)}`,
+                {
+                    headers: { Authorization: `Bearer ${token}` },
+                }
+            );
+            const posts = postsResponse.data.data.map((post) => ({
+                ...post,
+                type: 'post',
+            }));
 
-            setSearchResults({
-                posts: postsData.status === 'success' ? postsData.data : [],
-                users: usersData.status === 'success' ? usersData.data : [],
-            });
+            setSearchResults([...users, ...posts]);
         } catch (error) {
-            console.error('Error searching:', error);
-            setSearchResults({ posts: [], users: [] });
+            if (error.response && error.response.status !== 404) {
+                console.error('Search error:', error);
+            }
+            setSearchResults([]);
         } finally {
             setIsLoading(false);
         }
     };
 
-    const handleResultClick = (type, id) => {
-        setSearchTerm('');
+    const debouncedSearch = useCallback(debounce(handleSearch, 300), []);
+
+    const handleInputChange = (e) => {
+        const value = e.target.value;
+        setSearchTerm(value);
+        debouncedSearch(value);
+    };
+
+    const handleResultClick = (result) => {
+        if (result.type === 'user') {
+            navigate(`/profile/${result._id}`);
+        } else {
+            navigate(`/post/${result._id}`);
+        }
         setShowResults(false);
-        navigate(type === 'post' ? `/post/${id}` : `/profile/${id}`);
+        setSearchTerm('');
     };
 
     return (
-        <div className="search-bar" ref={searchRef}>
-            <div className="search-bar__input-wrapper">
-                <input
-                    type="text"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    placeholder="Search posts or users..."
-                    className="search-bar__input"
-                    onFocus={() => setShowResults(true)}
-                />
-                <div className="search-bar__icon">
+        <div className="search-wrapper" ref={searchRef}>
+            <input
+                type="text"
+                placeholder="Search users or posts..."
+                value={searchTerm}
+                onChange={handleInputChange}
+                className="search-input"
+                onFocus={() => setShowResults(true)}
+            />
+            {showResults && (searchResults.length > 0 || isLoading) && (
+                <div className="search-results">
                     {isLoading ? (
-                        <Loader2 className="search-bar__loading-icon" />
+                        <div className="loading">Searching...</div>
+                    ) : searchResults.length === 0 ? (
+                        <div className="no-results">No results found</div>
                     ) : (
-                        <Search className="search-bar__search-icon" />
-                    )}
-                </div>
-            </div>
-
-            {showResults && (searchResults.users.length > 0 || searchResults.posts.length > 0) && (
-                <div className="search-bar__results">
-                    {searchResults.users.length > 0 && (
-                        <div className="search-bar__results-section">
-                            <h3 className="search-bar__results-section-title">Users</h3>
-                            {searchResults.users.map((user) => (
-                                <div
-                                    key={user._id}
-                                    onClick={() => handleResultClick('user', user._id)}
-                                    className="search-bar__result-item"
-                                >
-                                    <User className="search-bar__result-icon" />
-                                    <div>
-                                        <p className="search-bar__result-name">{user.firstName} {user.lastName}</p>
-                                        <p className="search-bar__result-email">{user.email}</p>
+                        searchResults.map((result) => (
+                            <div
+                                key={result._id}
+                                className="search-result-item"
+                                onClick={() => handleResultClick(result)}
+                            >
+                                {result.type === 'user' ? (
+                                    <div className="user-result">
+                                        <div className="user-avatar">
+                                            {result.photo ? (
+                                                <img
+                                                    src={`http://localhost:3000/uploads/Profile_photo/${result.photo}`}
+                                                    alt={`${result.firstName}'s avatar`}
+                                                />
+                                            ) : (
+                                                <div className="default-avatar">
+                                                    {result.firstName[0]}
+                                                </div>
+                                            )}
+                                        </div>
+                                        <span>{result.firstName} {result.lastName}</span>
                                     </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-
-                    {searchResults.users.length > 0 && (
-                        <div className="search-bar__results-section">
-                            <h3 className="search-bar__results-section-title">Users</h3>
-                            {searchResults.users.map((user) => (
-                                <div
-                                    key={user._id}
-                                    onClick={() => handleResultClick('user', user._id)}
-                                    className="search-bar__result-item"
-                                >
-                                    <User className="search-bar__result-icon" />
-                                    <div>
-                                        <p className="search-bar__result-name">
-                                            {user.firstName || 'Unknown'} {user.lastName || ''}
-                                        </p>
-                                        <p className="search-bar__result-email">{user.email || 'No email'}</p>
+                                ) : (
+                                    <div className="post-result">
+                                        <span>{result.content.substring(0, 100)}...</span>
                                     </div>
-                                </div>
-                            ))}
-                        </div>
+                                )}
+                            </div>
+                        ))
                     )}
-                </div>
-            )}
-
-            {showResults && searchTerm && !isLoading && searchResults.users.length === 0 && searchResults.posts.length === 0 && (
-                <div className="search-bar__no-results">
-                    <p className="search-bar__no-results-message">No results found for "{searchTerm}"</p>
                 </div>
             )}
         </div>

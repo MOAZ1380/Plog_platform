@@ -191,46 +191,65 @@ const get_user_post = asyncWrapper(
     }
 );
 
-const search_post = asyncWrapper(async (req, res, next) => {
-    const { searchTerm } = req.params;
 
-    if (!searchTerm || searchTerm.trim() === '') {
-        return res.status(400).json({
-            status: httpstatus.FAIL,
-            message: 'Search term is required',
+const search_post = async (req, res) => {
+    try {
+        const searchTerm = req.params.searchTerm;
+
+        const posts = await Post.find({
+            content: { $regex: searchTerm, $options: 'i' },
+        }).populate('user_id', 'firstName lastName');
+
+        res.status(200).json({
+            status: 'success',
+            data: posts,
+        });
+    } catch (error) {
+        console.error('Error searching posts:', error);
+        res.status(500).json({
+            status: 'error',
+            message: 'Failed to search posts',
         });
     }
+};
 
-    const posts = await Post.find({ content: { $regex: searchTerm, $options: 'i' } })
-        .populate({
-            path: 'user_id',
-            select: 'firstName lastName photo',
-        })
-        .populate({
-            path: 'comments',
-            populate: {
-                path: 'user_id',
+const get_post_by_id = async (req, res) => {
+    try {
+        const postId = req.params.postId;
+
+        const post = await Post.findById(postId)
+            .populate('user_id', 'firstName lastName photo') 
+            .populate({
+                path: 'comments',
+                populate: {
+                    path: 'user_id',
+                    select: 'firstName lastName photo',
+                },
+            })
+            .populate({
+                path: 'likes',
                 select: 'firstName lastName photo',
-            },
-        })
-        .populate({
-            path: 'likes',
-            select: 'firstName lastName photo',
-        })
-        .exec();
+            });
 
-    if (!posts || posts.length === 0) {
-        return res.status(404).json({
-            status: httpstatus.FAIL,
-            message: 'No posts found matching the search term',
+        if (!post) {
+            return res.status(404).json({
+                status: 'fail',
+                message: 'Post not found',
+            });
+        }
+
+        res.status(200).json({
+            status: 'success',
+            data: post,
+        });
+    } catch (error) {
+        console.error('Error fetching post:', error);
+        res.status(500).json({
+            status: 'error',
+            message: 'Failed to fetch post',
         });
     }
-
-    res.status(200).json({
-        status: httpstatus.SUCCESS,
-        data: posts,
-    });
-});
+};
 
 
 
@@ -242,4 +261,5 @@ module.exports = {
     delete_my_post,
     get_user_post,
     search_post,
+    get_post_by_id,
 }

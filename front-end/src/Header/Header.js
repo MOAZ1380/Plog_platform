@@ -23,15 +23,12 @@ const Header = ({ jwt, setJwt }) => {
                 const decodedToken = jwtDecode(token);
                 const userId = decodedToken.id;
 
-                console.log('Fetching user data for userId:', userId); // Debugging
 
                 const response = await axios.get(`http://localhost:3000/api/users/${userId}`, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
 
-                console.log('User data fetched:', response.data); // Debugging
 
-                // Access the nested `data` property in the response
                 setUser(response.data.data);
             } catch (error) {
                 console.error('Error fetching user:', error);
@@ -52,7 +49,7 @@ const Header = ({ jwt, setJwt }) => {
 
     const handleProfileClick = () => {
         if (user?._id) {
-            navigate(`/profile/${user._id}`); // Navigate to the user's profile page
+            navigate(`/profile/${user._id}`);
         } else {
             alert('User data is not available. Please log in again.');
             navigate('/login');
@@ -69,7 +66,7 @@ const Header = ({ jwt, setJwt }) => {
     const handleMouseLeave = () => {
         const timeout = setTimeout(() => {
             setIsDropdownOpen(false);
-        }, 300); // 300ms delay before hiding the dropdown
+        }, 300);
         setDropdownTimeout(timeout);
     };
 
@@ -79,12 +76,10 @@ const Header = ({ jwt, setJwt }) => {
                 Home
             </button>
 
-            {/* Search Button and SearchBar */}
             <div className="search-container">
                 <SearchBar />
             </div>
 
-            {/* Profile Icon and Dropdown */}
             <div
                 className="profile-icon-container"
                 onMouseEnter={handleMouseEnter}
@@ -103,7 +98,7 @@ const Header = ({ jwt, setJwt }) => {
                 {isDropdownOpen && user && (
                     <div
                         className="dropdown-menu"
-                        onMouseEnter={handleMouseEnter} // Keep dropdown open when mouse is over it
+                        onMouseEnter={handleMouseEnter}
                         onMouseLeave={handleMouseLeave}
                     >
                         <button onClick={handleProfileClick}>Profile</button>

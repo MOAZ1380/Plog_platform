@@ -10,6 +10,26 @@ const Comment = ({ comments, postId, jwt, userId, onCommentUpdate }) => {
     const [dropdownOpen, setDropdownOpen] = useState(null);
     const navigate = useNavigate();
 
+    const avatarStyles = {
+        width: '40px',
+        height: '40px',
+        borderRadius: '50%',
+        objectFit: 'cover',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#e0e0e0',
+        color: '#333',
+        fontWeight: 'bold',
+        fontSize: '1.2rem'
+    };
+
+    const defaultAvatarStyles = {
+        ...avatarStyles,
+        backgroundColor: '#e0e0e0',
+        display: 'flex'
+    };
+
     const handleSubmitComment = async (e) => {
         e.preventDefault();
 
@@ -139,7 +159,7 @@ const Comment = ({ comments, postId, jwt, userId, onCommentUpdate }) => {
                                 className="comment-user-info"
                                 onClick={() => handleProfileNavigation(comment.user_id?._id)}
                             >
-                                <div className="comment-avatar">
+                                <div className="comment-avatar" style={defaultAvatarStyles}>
                                     {comment.user_id?.photo ? (
                                         <img
                                             src={`http://localhost:3000/uploads/Profile_photo/${comment.user_id.photo}`}

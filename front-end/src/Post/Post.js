@@ -24,14 +24,16 @@ const Post = ({ post, jwt, handleEditPost, handleDeletePost, fetchLikedUsers, is
         width: '40px',
         height: '40px',
         borderRadius: '50%',
-        objectFit: 'cover',
+        objectFit: 'contain',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: '#e0e0e0',
         color: '#333',
         fontWeight: 'bold',
-        fontSize: '1.2rem'
+        fontSize: '1.2rem',
+        overflow: 'hidden'
+
     };
 
     const defaultAvatarStyles = {

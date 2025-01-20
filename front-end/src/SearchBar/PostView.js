@@ -32,21 +32,32 @@ const PostView = ({ jwt }) => {
     }, [postId, jwt]);
 
     const handleEditPost = async (postId, updatedContent) => {
-        setPost(prev => ({
+        setPost((prev) => ({
             ...prev,
-            content: updatedContent
+            content: updatedContent,
         }));
+    };
+
+    const handleDeletePost = async (postId) => {
+        try {
+            await axios.delete(`http://localhost:3000/api/posts/delete_update/${postId}`, {
+                headers: { Authorization: `Bearer ${jwt}` },
+            });
+            setPost(null);
+        } catch (error) {
+            console.error('Error deleting post:', error);
+        }
     };
 
     const fetchLikedUsers = async (postId) => {
         try {
             const response = await axios.get(
-                `http://localhost:3000/api/posts/${postId}/likes`,
+                `http://localhost:3000/api/posts/fetch_likeAndComment/${postId}`,
                 {
                     headers: { Authorization: `Bearer ${jwt}` },
                 }
             );
-            return response.data.data;
+            return response.data.post.likes || [];
         } catch (error) {
             console.error('Error fetching liked users:', error);
             return [];
@@ -68,10 +79,13 @@ const PostView = ({ jwt }) => {
     return (
         <div className="post-view">
             <Post
+                key={post._id}
                 post={post}
                 jwt={jwt}
                 handleEditPost={handleEditPost}
+                handleDeletePost={handleDeletePost}
                 fetchLikedUsers={fetchLikedUsers}
+                isStandalone={true}
             />
         </div>
     );

@@ -20,6 +20,26 @@ const Post = ({ post, jwt, handleEditPost, handleDeletePost, fetchLikedUsers, is
     const [editContent, setEditContent] = useState('');
     const [dropdownOpen, setDropdownOpen] = useState(false);
 
+    const avatarStyles = {
+        width: '40px',
+        height: '40px',
+        borderRadius: '50%',
+        objectFit: 'cover',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#e0e0e0',
+        color: '#333',
+        fontWeight: 'bold',
+        fontSize: '1.2rem'
+    };
+
+    const defaultAvatarStyles = {
+        ...avatarStyles,
+        backgroundColor: '#e0e0e0',
+        display: 'flex'
+    };
+
     useEffect(() => {
         const fetchComments = async () => {
             try {
@@ -57,6 +77,15 @@ const Post = ({ post, jwt, handleEditPost, handleDeletePost, fetchLikedUsers, is
         setLikeCount(post.num_like);
     }, [post, userId]);
 
+    useEffect(() => {
+        const syncLikeState = async () => {
+            if (isLikesModalVisible) {
+                await fetchLikedUsersData();
+            }
+        };
+        syncLikeState();
+    }, [isLiked, likeCount]);
+
     const handleLike = async () => {
         try {
             const endpoint = isLiked
@@ -73,22 +102,32 @@ const Post = ({ post, jwt, handleEditPost, handleDeletePost, fetchLikedUsers, is
 
             if (response.data.status === 'success') {
                 const updatedPost = response.data.data;
+                
                 setIsLiked(!isLiked);
                 setLikeCount(updatedPost.num_like);
+                
+                if (!isLiked) {
+                    setLikedUsers(prev => [...prev, {
+                        _id: userId,
+                        firstName: decodedToken.firstName,
+                        lastName: decodedToken.lastName
+                    }]);
+                } else {
+                    setLikedUsers(prev => prev.filter(user => user._id !== userId));
+                }
 
                 if (handleEditPost) {
                     handleEditPost(post._id, updatedPost);
                 }
-            } else {
-                alert(response.data.message || 'Failed to update like status.');
             }
         } catch (error) {
-            console.error('Error toggling like:', error.response?.data || error.message);
-            alert('An error occurred while updating the like status.');
+            console.error('Error toggling like:', error);
+            setIsLiked(post.likes.includes(userId));
+            setLikeCount(post.num_like);
         }
     };
 
-    const handleUnlikeUser = async (userId) => {
+    const handleUnlikeUser = async (unlikeUserId) => {
         try {
             const response = await axios.post(
                 `http://localhost:3000/api/posts/remove_like/${post._id}/unlike`,
@@ -97,21 +136,22 @@ const Post = ({ post, jwt, handleEditPost, handleDeletePost, fetchLikedUsers, is
             );
 
             if (response.data.status === 'success') {
-                setLikedUsers((prevUsers) => prevUsers.filter((user) => user._id !== userId));
-                setLikeCount((prevCount) => prevCount - 1);
-
-                if (userId === decodedToken.id) {
+                setLikedUsers(prevUsers => prevUsers.filter(user => user._id !== unlikeUserId));
+                setLikeCount(prev => prev - 1);
+                
+                if (unlikeUserId === userId) {
                     setIsLiked(false);
                 }
-            } else {
-                alert(response.data.message || 'Failed to unlike.');
+                
+                if (handleEditPost) {
+                    handleEditPost(post._id, response.data.data);
+                }
             }
         } catch (error) {
-            console.error('Error unliking user:', error.response?.data || error.message);
-            alert('An error occurred while unliking the post.');
+            console.error('Error unliking user:', error);
+            await fetchLikedUsersData();
         }
     };
-
 
     const fetchLikedUsersData = async () => {
         try {
@@ -121,14 +161,16 @@ const Post = ({ post, jwt, handleEditPost, handleDeletePost, fetchLikedUsers, is
             );
 
             if (response.data.status === 'success') {
-                setLikedUsers(response.data.post.likes || []);
+                const uniqueLikes = response.data.post.likes.filter((like, index, self) =>
+                    index === self.findIndex((l) => l._id === like._id)
+                );
+                setLikedUsers(uniqueLikes);
+                setLikeCount(response.data.post.num_like);
             }
         } catch (error) {
             console.error('Error fetching liked users:', error);
-            alert('Failed to fetch liked users. Please try again.');
         }
     };
-
 
     const showLikesModal = async () => {
         setIsLikesModalVisible(true);
@@ -141,7 +183,6 @@ const Post = ({ post, jwt, handleEditPost, handleDeletePost, fetchLikedUsers, is
             setLoadingLikes(false);
         }
     };
-
 
     const handleEdit = () => {
         setIsEditing(true);
@@ -200,13 +241,14 @@ const Post = ({ post, jwt, handleEditPost, handleDeletePost, fetchLikedUsers, is
                             <img
                                 src={`http://localhost:3000/uploads/Profile_photo/${post.user_id.photo}`}
                                 alt="User Avatar"
+                                style={avatarStyles}
                                 onError={(e) => {
                                     e.target.style.display = 'none';
                                     e.target.nextSibling.style.display = 'flex';
                                 }}
                             />
                         ) : (
-                            <div className="default-avatar" style={{ display: post._id.photo ? 'none' : 'flex' }}>
+                            <div className="default-avatar" style={defaultAvatarStyles}>
                                 {post.user_id?.firstName?.[0] || 'U'}
                             </div>
                         )}
@@ -241,8 +283,6 @@ const Post = ({ post, jwt, handleEditPost, handleDeletePost, fetchLikedUsers, is
             {isEditing ? (
                 <div className="edit-form">
                     <textarea
-                        id="edit-content"
-                        name="edit-content"
                         value={editContent}
                         onChange={(e) => setEditContent(e.target.value)}
                         className="edit-input"
@@ -287,18 +327,18 @@ const Post = ({ post, jwt, handleEditPost, handleDeletePost, fetchLikedUsers, is
                         ) : (
                             <ul className="liked-users-list">
                                 {likedUsers.map((user) => (
-                                    <li key={user._id} className="liked-user-item">
+                                    <li key={`${user._id}-${post._id}`} className="liked-user-item">
                                         <div className="liked-user-info">
                                             <span>{user.firstName} {user.lastName}</span>
                                         </div>
-                                        {user._id === userId ? (
+                                        {user._id === userId && (
                                             <button
                                                 onClick={() => handleUnlikeUser(user._id)}
                                                 className="unlike-button"
                                             >
                                                 Unlike
                                             </button>
-                                        ) : null}
+                                        )}
                                     </li>
                                 ))}
                             </ul>

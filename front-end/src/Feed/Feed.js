@@ -83,7 +83,9 @@ const Feed = ({ jwt }) => {
                     key={post._id}
                     post={post}
                     jwt={jwt}
-                    handleEditPost={updatePost}
+                    handleEditPost={(postId, updatedPost) => {
+                        updatePost(postId, updatedPost);
+                    }}
                     handleDeletePost={deletePost}
                     fetchLikedUsers={fetchLikedUsersAndComments}
                 />

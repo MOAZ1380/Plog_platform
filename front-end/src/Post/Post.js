@@ -10,8 +10,8 @@ const Post = ({ post, jwt, handleEditPost, handleDeletePost, fetchLikedUsers, is
     const userId = decodedToken.id;
     const navigate = useNavigate();
     const isAuthorized = userId === post.user_id?._id;
-    const [isLiked, setIsLiked] = useState(post.likes.includes(userId));
-    const [likeCount, setLikeCount] = useState(post.num_like);
+    const [isLiked, setIsLiked] = useState(false);
+    const [likeCount, setLikeCount] = useState(post.num_like || 0);
     const [isLikesModalVisible, setIsLikesModalVisible] = useState(false);
     const [likedUsers, setLikedUsers] = useState([]);
     const [loadingLikes, setLoadingLikes] = useState(false);
@@ -19,6 +19,7 @@ const Post = ({ post, jwt, handleEditPost, handleDeletePost, fetchLikedUsers, is
     const [isEditing, setIsEditing] = useState(false);
     const [editContent, setEditContent] = useState('');
     const [dropdownOpen, setDropdownOpen] = useState(false);
+    const [isLikeLoading, setIsLikeLoading] = useState(false);
 
     const avatarStyles = {
         width: '40px',
@@ -32,8 +33,7 @@ const Post = ({ post, jwt, handleEditPost, handleDeletePost, fetchLikedUsers, is
         color: '#333',
         fontWeight: 'bold',
         fontSize: '1.2rem',
-        overflow: 'hidden'
-
+        overflow: 'hidden',
     };
 
     const defaultAvatarStyles = {
@@ -41,6 +41,27 @@ const Post = ({ post, jwt, handleEditPost, handleDeletePost, fetchLikedUsers, is
         backgroundColor: '#e0e0e0',
         display: 'flex'
     };
+
+    useEffect(() => {
+        const checkLikeStatus = async () => {
+            try {
+                const response = await axios.get(
+                    `http://localhost:3000/api/posts/fetch_likeAndComment/${post._id}`,
+                    { headers: { Authorization: `Bearer ${jwt}` } }
+                );
+
+                if (response.data.status === 'success') {
+                    const userHasLiked = response.data.post.likes.includes(userId);
+                    setIsLiked(userHasLiked);
+                    setLikeCount(response.data.post.num_like || 0);
+                }
+            } catch (error) {
+                console.error('Error checking like status:', error);
+            }
+        };
+
+        checkLikeStatus();
+    }, [post._id, userId, jwt]);
 
     useEffect(() => {
         const fetchComments = async () => {
@@ -74,21 +95,10 @@ const Post = ({ post, jwt, handleEditPost, handleDeletePost, fetchLikedUsers, is
         };
     }, [dropdownOpen]);
 
-    useEffect(() => {
-        setIsLiked(post.likes.includes(userId));
-        setLikeCount(post.num_like);
-    }, [post, userId]);
+    const handleLikeClick = async () => {
+        if (isLikeLoading) return;
+        setIsLikeLoading(true);
 
-    useEffect(() => {
-        const syncLikeState = async () => {
-            if (isLikesModalVisible) {
-                await fetchLikedUsersData();
-            }
-        };
-        syncLikeState();
-    }, [isLiked, likeCount]);
-
-    const handleLike = async () => {
         try {
             const endpoint = isLiked
                 ? `http://localhost:3000/api/posts/remove_like/${post._id}/unlike`
@@ -97,65 +107,29 @@ const Post = ({ post, jwt, handleEditPost, handleDeletePost, fetchLikedUsers, is
             const response = await axios.post(
                 endpoint,
                 {},
-                {
-                    headers: { Authorization: `Bearer ${jwt}` },
-                }
-            );
-
-            if (response.data.status === 'success') {
-                const updatedPost = response.data.data;
-                
-                setIsLiked(!isLiked);
-                setLikeCount(updatedPost.num_like);
-                
-                if (!isLiked) {
-                    setLikedUsers(prev => [...prev, {
-                        _id: userId,
-                        firstName: decodedToken.firstName,
-                        lastName: decodedToken.lastName
-                    }]);
-                } else {
-                    setLikedUsers(prev => prev.filter(user => user._id !== userId));
-                }
-
-                if (handleEditPost) {
-                    handleEditPost(post._id, updatedPost);
-                }
-            }
-        } catch (error) {
-            console.error('Error toggling like:', error);
-            setIsLiked(post.likes.includes(userId));
-            setLikeCount(post.num_like);
-        }
-    };
-
-    const handleUnlikeUser = async (unlikeUserId) => {
-        try {
-            const response = await axios.post(
-                `http://localhost:3000/api/posts/remove_like/${post._id}/unlike`,
-                {},
                 { headers: { Authorization: `Bearer ${jwt}` } }
             );
 
             if (response.data.status === 'success') {
-                setLikedUsers(prevUsers => prevUsers.filter(user => user._id !== unlikeUserId));
-                setLikeCount(prev => prev - 1);
-                
-                if (unlikeUserId === userId) {
-                    setIsLiked(false);
-                }
-                
-                if (handleEditPost) {
-                    handleEditPost(post._id, response.data.data);
+                setIsLiked(!isLiked);
+                setLikeCount(prevCount => isLiked ? prevCount - 1 : prevCount + 1);
+
+                if (isLikesModalVisible) {
+                    fetchLikeDetails();
                 }
             }
         } catch (error) {
-            console.error('Error unliking user:', error);
-            await fetchLikedUsersData();
+            console.error('Error handling like:', error);
+            alert('Failed to update like status. Please try again.');
+        } finally {
+            setIsLikeLoading(false);
         }
     };
 
-    const fetchLikedUsersData = async () => {
+    const fetchLikeDetails = async () => {
+        if (loadingLikes) return;
+        setLoadingLikes(true);
+
         try {
             const response = await axios.get(
                 `http://localhost:3000/api/posts/fetch_likeAndComment/${post._id}`,
@@ -163,24 +137,13 @@ const Post = ({ post, jwt, handleEditPost, handleDeletePost, fetchLikedUsers, is
             );
 
             if (response.data.status === 'success') {
-                const uniqueLikes = response.data.post.likes.filter((like, index, self) =>
-                    index === self.findIndex((l) => l._id === like._id)
-                );
-                setLikedUsers(uniqueLikes);
-                setLikeCount(response.data.post.num_like);
+                setLikedUsers(response.data.post.likes || []);
+                setLikeCount(response.data.post.num_like || 0);
+                setIsLikesModalVisible(true);
             }
         } catch (error) {
-            console.error('Error fetching liked users:', error);
-        }
-    };
-
-    const showLikesModal = async () => {
-        setIsLikesModalVisible(true);
-        setLoadingLikes(true);
-        try {
-            await fetchLikedUsersData();
-        } catch (error) {
-            console.error('Error fetching liked users:', error);
+            console.error('Error fetching like details:', error);
+            alert('Failed to load like details. Please try again.');
         } finally {
             setLoadingLikes(false);
         }
@@ -309,47 +272,51 @@ const Post = ({ post, jwt, handleEditPost, handleDeletePost, fetchLikedUsers, is
             )}
             <div className="post-actions">
                 <button
-                    onClick={handleLike}
                     className={`like-button ${isLiked ? 'liked' : ''}`}
+                    onClick={handleLikeClick}
+                    disabled={isLikeLoading}
                 >
-                    {isLiked ? 'Unlike' : 'Like'} ({likeCount})
+                    {isLikeLoading ? '...' : isLiked ? 'Unlike' : 'Like'}
                 </button>
-                {likeCount > 0 && (
-                    <button onClick={showLikesModal} className="like-button">
-                        View Likes
-                    </button>
-                )}
+                <button
+                    className="like-count-button"
+                    onClick={fetchLikeDetails}
+                >
+                    {likeCount} {likeCount === 1 ? 'like' : 'likes'}
+                </button>
             </div>
             {isLikesModalVisible && (
-                <div className="modal-overlay">
-                    <div className="modal">
-                        <h3>Liked By</h3>
-                        {loadingLikes ? (
-                            <p className="loading-text">Loading...</p>
-                        ) : (
-                            <ul className="liked-users-list">
-                                {likedUsers.map((user) => (
-                                    <li key={`${user._id}-${post._id}`} className="liked-user-item">
-                                        <div className="liked-user-info">
-                                            <span>{user.firstName} {user.lastName}</span>
+                <div className="likes-modal">
+                    <div className="likes-modal-content">
+                        <button 
+                            className="close-modal" 
+                            onClick={() => setIsLikesModalVisible(false)}
+                            aria-label="Close modal"
+                        >
+                            ×
+                        </button>
+                        <h3>Liked by</h3>
+                        <div className="liked-users-list">
+                            {likedUsers.map((user) => (
+                                <div key={user._id} className="liked-user">
+                                    {user.photo ? (
+                                        <img
+                                            src={`http://localhost:3000/uploads/Profile_photo/${user.photo}`}
+                                            alt={`${user.firstName}'s avatar`}
+                                            className="user-avatar-small"
+                                        />
+                                    ) : (
+                                        <div className="default-avatar-small">
+                                            {user.firstName?.[0] || 'U'}
                                         </div>
-                                        {user._id === userId && (
-                                            <button
-                                                onClick={() => handleUnlikeUser(user._id)}
-                                                className="unlike-button"
-                                            >
-                                                Unlike
-                                            </button>
-                                        )}
-                                    </li>
-                                ))}
-                            </ul>
-                        )}
-                        <button onClick={() => setIsLikesModalVisible(false)}>Close</button>
+                                    )}
+                                    <span>{user.firstName} {user.lastName}</span>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </div>
             )}
-
             <h3>Comments:</h3>
             <Comment
                 comments={comments}

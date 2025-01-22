@@ -1,566 +1,181 @@
-### User Authentication API Documentation
+# Blog Post Platform
 
-# Overview
+A full-stack blog post platform where users can create, share, and interact with posts. This project includes user authentication, post creation, commenting, liking, and profile management.
 
-- This API allows users to register and log in. It provides functionality to handle user registration, login with email and password, and token generation for authenticated requests.
+---
 
-# Endpoints
+## Table of Contents
 
-# 1. User Registration
+1. [Features](#features)
+2. [Technologies Used](#technologies-used)
+3. [Installation](#installation)
+4. [API Endpoints](#api-endpoints)
+5. [Frontend Structure](#frontend-structure)
+6. [Backend Structure](#backend-structure)
+7. [Contributing](#contributing)
+8. [License](#license)
 
-- Endpoint: POST /api/users/register
-- This endpoint is used to register a new user. The user must provide their first name, last name, sex, birth date, email, and  password. The server will validate the email and password, check if the user already exists, and if not, create a new user in the database.
+---
 
-- Input:
+## Features
 
--  firstName: First name of the user (Required).
-- lastName: Last name of the user (Required).
-- sex: Sex of the user (Required).
-- birthDate: Date of birth of the user (Required, valid date format).
-- email: Email of the user (Required, valid email format).
-- password: Password for the user (Required, hashed).
-- photo: Optional profile photo (File upload).
+- **User Authentication**: Register, login, and manage user profiles.
+- **Post Management**: Create, update, and delete posts with images.
+- **Comments**: Add, edit, and delete comments on posts.
+- **Likes**: Like and unlike posts, view users who liked a post.
+- **Search**: Search for users and posts.
+- **Responsive Design**: Works seamlessly on all devices.
 
-# Response:
+---
 
--  201 Created: If the user is successfully registered.
+## Technologies Used
 
-# Example:
- 
-    {
-      "status": "SUCCESS",
-      "data": {
-        "user": {
-          "firstName": "John",
-          "lastName": "Doe",
-          "sex": "male",
-          "birthDate": "1990-01-01",
-          "email": "john.doe@example.com",
-          "photo": "profile_photo.jpg"
-        },
-        "my_token": "generated_jwt_token"
-      }
-    }
+### Frontend
+- **React**: Frontend library for building user interfaces.
+- **React Router**: For routing and navigation.
+- **Axios**: For making HTTP requests to the backend.
+- **CSS**: Styling components and pages.
+- **React Icons**: For icons like the scroll-to-top button.
 
-# 400 Bad Request: If the email is invalid or the user already exists.
+### Backend
+- **Node.js**: JavaScript runtime for the backend.
+- **Express.js**: Framework for building RESTful APIs.
+- **MongoDB**: NoSQL database for storing data.
+- **Mongoose**: ODM for MongoDB.
+- **JWT**: For user authentication and authorization.
+- **Multer**: For handling file uploads (profile pictures and post images).
+- **Bcrypt**: For password hashing.
 
-# Example:
+---
 
-    {
-        "status": "FAIL",
-        "message": "User already exists"
-    }
+## Installation
 
+### Prerequisites
+- Node.js and npm installed.
+- MongoDB installed and running.
 
-# 400 Bad Request: If the birth date is invalid or missing.
+### Steps
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/your-username/blog-post-platform.git
+   cd blog-post-platform
 
-# Example:
-    
-    {
-      "status": "FAIL",
-      "message": "Invalid birth date"
-    }
+2. **Install dependencies**:
+  npm install
+  cd client
+  npm install
 
-# 400 Bad Request: If the email is invalid.
+3. **Set up environment variables:
+  **Create a .env file in the root directory and add the following**:
+    PORT=3000
+    MONGODB_URI=mongodb://localhost:27017/blogpost
+    JWT_SECRET=your_jwt_secret
 
-# Example:
+4. **Run the backend**:
+  node index.js
 
-    {
-      "status": "FAIL",
-      "message": "Invalid email"
-    }
+5. **Run the frontend**:
+  cd front-end/src
+  npm start
 
-## 2. User Login
+6. **Access the application**:
+  Open your browser and go to http://localhost:3000
 
-# Endpoint: POST /api/users/login
+---
 
--- This endpoint is used to log in an existing user. The user must provide their email and password. If the credentials match, a JWT (JSON Web Token) is generated and returned.
+### API Endpoints
 
-- Input:
+## Users
 
-    *  email: The email of the user (Required).
-    *  password: The password of the user (Required).
+- POST /api/users/register: Register a new user.
+- POST /api/users/login: Log in a user.
+- GET /api/users/:userId : Get user details by ID.
+- PATCH /api/users/update_profile: Update user profile.
+- DELETE /api/users/delete_account: Delete user account.
 
-- Response:
+## Posts
 
-# 200 OK: If the login is successful.
+- POST /api/posts/AddPost: Create a new post.
+- GET /api/posts/GetAllPost: Get all posts.
+- GET /api/posts/GetMyPost: Get posts by the logged-in user.
+- GET /api/posts/GetUserPost/:UserId : Get posts by a specific user.
+- PATCH /api/posts/delete_update/:post_id : Update a post.
+- DELETE /api/posts/delete_update/:post_id : Delete a post.
+-  GET /api/posts/search/:searchTerm : Search for posts.
 
-# Example:
+## Comments
 
-    {
-      "status": "SUCCESS",
-      "data": {
-        "message": "Login successful",
-        "my_token": "generated_jwt_token"
-      }
-    }
+- POST /api/posts/add_comment/:PostId /comment: Add a comment to a post.
+- PATCH /api/posts/Update_comment/:PostId /comment/:commentId : Update a comment.
+- DELETE /api/posts/remove_comment/:PostId /comment/:commentId : Delete a comment.
+- GET /api/posts/:postId /comment: Get comments for a post.
 
-# 400 Bad Request: If the email or password is missing.
+## Likes
 
-# Example:
+- POST /api/posts/add_like/:Postid /like: Like a post.
+- POST /api/posts/remove_like/:Postid /unlike: Unlike a post.
+- GET /api/posts/fetch_likeAndComment/:Postid : Get likes and comments for a post.
 
-    {
-      "status": "FAIL",
-      "message": "Email and password are required"
-    }
+---
 
-# 404 Not Found: If the user is not found.
+### Frontend Structure
 
-# Example:
+## App.js: Main application component with routing.
 
-    {
-      "status": "FAIL",
-      "message": "User not found"
-    }
+## Components:
 
-# 401 Unauthorized: If the credentials are invalid (password mismatch).
+- Header: Navigation bar with search and profile options.
+- Feed: Displays posts and allows users to create new posts.
+- Post: Individual post component with comments and likes.
+- Comment: Comment section for posts.
+- Profile: User profile page with posts and edit options.
+- Login/Register: Authentication forms.
+- SearchBar: Search functionality for users and posts.
+- ScrollToTopButton: Button to scroll to the top of the page.
 
-# Example:
+## Context:
+- PostsContext: Manages global state for posts.
 
-    {
-      "status": "FAIL",
-      "message": "Invalid credentials"
-    }
+---
 
-# Authentication
+### Backend Structure
 
-- JWT (JSON Web Token) is used for authentication. After a successful login or registration, the server generates a token that is sent in the response. This token should be included in the request headers for subsequent protected routes via Authorization: Bearer <token>.
+## Models:
 
-- Error Handling
-    - The AppError module is used to manage errors across the application. Error responses include a status code, error message, and appropriate HTTP status.
+- User.js: User schema for MongoDB.
+- Post.js: Post schema for MongoDB.
+- Comment.js: Comment schema for MongoDB.
 
-# Post API Documentation
+## Controllers:
 
-## Overview
+- User_controller.js: Handles user-related logic.
+- Post_controller.js: Handles post-related logic.
+- Comment_controller.js: Handles comment-related logic.
+- Like_controller.js: Handles like-related logic.
 
-- This project allows users to add, browse, update, and delete posts. Additionally, users can view their profile data and    their posts.
+## Routes:
 
-Endpoints
+- users_route.js: Routes for user-related endpoints.
+- posts_route.js: Routes for post-related endpoints.
+- comments_route.js: Routes for comment-related endpoints.
+- likes_route.js: Routes for like-related endpoints.
 
-## 1. Add Post
+## Middleware:
 
-### Endpoint: POST /api/posts/AddPost
+- verifyToken.js: Authenticates users using JWT.
+- verifyOwnership.js: Ensures users can only edit/delete their own posts.
+- multer.js: Handles file uploads.
 
-- Description: Allows users to create a new post with optional photo upload.
+---
 
-- Request Headers:
+## Contributing
 
-- Authorization: Bearer 
+1. Fork the repository.
+2. Create a new branch: git checkout -b feature/your-feature-name.
+3. Commit your changes: git commit -m 'Add some feature'.
+4. Push to the branch: git push origin feature/your-feature-name.
+5. Submit a pull request.
 
-- Request Body:
-    - content (String): The content of the post (Required).
-    - photo (File): An optional photo for the post.
+## License
 
-- Response:
-    - 201 Created: Post successfully created.
-
-## Example:
-
-    {
-      "status": "success",
-      "data": {
-        "post": {
-          "_id": "64c5f3e1234abc",
-          "user_id": "64b123d1234abc",
-          "content": "This is my first post",
-          "photo": "example.jpg",
-          "created_at": "2024-12-21T14:30:00Z",
-          "updated_at": "2024-12-21T14:30:00Z"
-        }
-      }
-    }
-
-## 2. Get All Posts
-
-### Endpoint: GET /api/posts/GetAllPost
-
-- Description: Fetches all posts, sorted by the latest updates.
-
-- Request Headers:
-
-- Authorization: Bearer 
-
-- Query Parameters:
-    -page (Number): The page number (Default: 1).
-    -page_size (Number): The number of posts per page (Default: 10).
-
-# Response:
-
-- 200 OK: Posts successfully retrieved.
-
-## Example:
-
-    {
-      "status": "success",
-      "data": [
-        {
-          "_id": "64c5f3e1234abc",
-          "user_id": "64b123d1234abc",
-          "content": "This is my first post",
-          "photo": "example.jpg",
-          "created_at": "2024-12-21T14:30:00Z",
-          "updated_at": "2024-12-21T14:30:00Z",
-          "likes": [
-            { "firstName": "John", "lastName": "Doe" }
-          ],
-          "comments": [
-            {
-              "user_id": { "firstName": "Jane", "lastName": "Smith" },
-              "content": "Great post!",
-              "created_at": "2024-12-21T15:00:00Z"
-            }
-          ]
-        }
-      ]
-    }
-
-## 3. Get My Posts
-
-# Endpoint: GET /api/posts/GetMyPost
-
-- Description: Fetches posts created by the authenticated user.
-- Request Headers:
-- Authorization: Bearer 
-- Query Parameters:
-    -page (Number): The page number (Default: 1).
-    -page_size (Number): The number of posts per page (Default: 5).
-# Response:
-    - Same as Get All Posts.
-## 4. Update or Delete a Post
-## Endpoint: PATCH/DELETE api/posts/delete_update/:post_id
-- Update Post (PATCH)
-- Description: Updates the content and/or photo of a user's post.
-- Request Headers:
-- Authorization: Bearer 
-- Request Body:
-    - content (String): The new content for the post.
-    - photo (File): The new photo for the post (Optional).
-
-# Response:
-# 200 OK: Post successfully updated.
-### Example:
-
-    {
-      "status": "success",
-      "updatedPost": {
-        "_id": "64c5f3e1234abc",
-        "content": "Updated post content",
-        "photo": "updated_photo.jpg",
-        "updated_at": "2024-12-21T15:00:00Z"
-      }
-    }
-
-## Delete Post (DELETE)
-- Description: Deletes a user's post.
-## Response:
-- 200 OK: Post successfully deleted.
-## Example:
-
-    {
-      "status": "success",
-      "deletePost": {
-        "_id": "64c5f3e1234abc",
-        "content": "Deleted post content",
-        "photo": "deleted_photo.jpg",
-        "deleted_at": "2024-12-21T15:30:00Z"
-      }
-    }
-
-## API Documentation for Comment Management
-
-## Overview
-
-- This API provides endpoints for managing comments on posts in a web application. Users can add, update, and delete comments on posts while maintaining data consistency and access control.
-
-# Endpoints
-
-### 1. Add Comment
-#### Endpoint:
-### POST api/posts/add_comment/:PostId/comments
-# Description:
-- Adds a new comment to the specified post.
-- Request Headers:
-- Authorization: Bearer <JWT Token>
-- Path Parameters:
-    - PostId (string): The ID of the post to which the comment will be added.
-# Request Body:
-    {
-      "content": "Your comment text"
-    }
-
-# Responses:
-    - all comments written by the current user.
-# 200 OK:
-    {
-      "status": "SUCCESS",
-      "message": "Comment added successfully",
-      "data": [
-        {
-          "content": "Your comment text",
-          "user_id": "User ID",
-          "createdAt": "Timestamp",
-          "updatedAt": "Timestamp"
-        },
-        {
-          "content": "Your comment_2 text",
-          "user_id": "User ID",
-          "createdAt": "Timestamp",
-          "updatedAt": "Timestamp"
-        }
-      ]
-    }
-# 400 Bad Request:
-
-    {
-      "status": "FAIL",
-      "message": "Comment content cannot be empty"
-    }
-
-# 404 Not Found:
-    {
-      "status": "FAIL",
-      "message": "Post not found"
-    }
-
-# 2. Update Comment
-# Endpoint:
-# Patch    /api/posts/update_comment/:PostId/comments/:commentId
-- Description:
-- Updates an existing comment on the specified post.
-- Request Headers:
-- Authorization: Bearer <JWT Token>
-- Path Parameters:
-    - PostId (string): The ID of the post.
-    - commentId (string): The ID of the comment to update.
-# Request Body:
-    {
-      "content": "Updated comment text"
-    }
-
-# Responses:
--  all comments written by the current user and update.
-# 200 OK:
-
-    {
-      "status": "SUCCESS",
-      "message": "Comment updated successfully",
-      "data": [
-        {
-          "content": "Updated comment text",
-          "user_id": "User ID",
-          "createdAt": "Timestamp",
-          "updatedAt": "Timestamp"
-        },
-        {
-          "content": " all comments written by the current user.",
-          "user_id": "User ID",
-          "createdAt": "Timestamp",
-          "updatedAt": "Timestamp"
-        }
-      ]
-    }
-
-# 400 Bad Request:
-    {
-      "status": "FAIL",
-      "message": "Comment content cannot be empty"
-    }
-
-# 403 Forbidden:
-    {
-      "status": "FAIL",
-      "message": "You are not authorized to update this comment"
-    }
-
-# 404 Not Found:
-
-    {
-        "status": "FAIL",
-        "message": "Post not found"
-    }
-
-# 3. Delete Comment
-# Endpoint:
-# DELETE /api/posts/remove_comment/:PostId/comment/:commentId 
-- Description:
-- Deletes a comment from the specified post.
-- Request Headers:
-- Authorization: Bearer <JWT Token>
-- Path Parameters:
-    - PostId (string): The ID of the post.
-    - commentId (string): The ID of the comment to delete.
-# Responses:
-# 200 OK:
-    {
-      "status": "SUCCESS",
-      "message": "Comment deleted successfully",
-      "data": [
-        {
-          "content": "Remaining comment text",
-          "user_id": "User ID",
-          "createdAt": "Timestamp",
-          "updatedAt": "Timestamp"
-        }
-      ]
-    }
-
-# 403 Forbidden:
-    {
-      "status": "FAIL",
-      "message": "You are not authorized to delete this comment"
-    }
-
-#404 Not Found:
-    {
-      "status": "FAIL",
-      "message": "Post not found"
-    }
-
-# Error Handling
-# The API uses a consistent error format for all responses:
-    {
-      "status": "FAIL",
-      "message": "Error message"
-    }
-
-# Common Errors
-# 400 Bad Request: Input validation failed.
-# 403 Forbidden: Unauthorized access to a resource.
-# 404 Not Found: Resource not found.
-# Models
-# Comment
-    {
-      "_id": "Comment ID",
-      "user_id": "User ID",
-      "content": "Comment text",
-      "createdAt": "Timestamp",
-      "updatedAt": "Timestamp"
-    }
-
-# Post
-    {
-      "_id": "Post ID",
-      "comments": ["Comment ID", "Comment ID"],
-      "...": "Other post fields"
-    }
-    
-    
-# API Documentation: Like Management
-### Endpoints
-### Add Like
-### URL: /api/posts/add_like/:PostId/like
-### Method: POST
-- Description: Adds a like to a post by the authenticated user.
-- Request Headers:
-- Authorization: Bearer token for user authentication.
-- Request Parameters:
-    - Postid (URL parameter): The ID of the post to be liked.
-# Response:
-# Success (200):
-    {
-      "status": "SUCCESS",
-      "message": "Liked successfully"
-    }
-
-# Error (404): Post not found
-    
-    {
-        "status": "FAIL",
-        "message": "Post not found"
-    }
-- Notes:
-    - The user must be authenticated.
-    - If the user already liked the post, the like is not duplicated.
-# Remove Like
-# URL: /posts/:Postid/like
-# Method: DELETE
-- Description: Removes a like from a post by the authenticated user.
-# Request Headers:
-- Authorization: Bearer token for user authentication.
-# Request Parameters:
-- Postid (URL parameter): The ID of the post to remove the like from.
-# Response:
-Success (200):
-    
-    {
-      "status": "SUCCESS",
-      "message": "Like removed successfully"
-    }
-
-# Error (404): Post not found
-    {
-      "status": "FAIL",
-      "message": "Post not found"
-    }
-
-# Notes:
-- The user must be authenticated.
-- If the user has not liked the post, the action does nothing.
-# Models
-
-# Post
-- likes: Array of user IDs who liked the post.
-- num_like: Number of likes for the post.
-# User
-- likedPosts: Array of post IDs that the user has liked.
-
-# Error Handling
-- 404: Returned when the post with the given Postid does not exist.
-- 401: Returned when the user is not authenticated.
-# Example Usage
-
-# Add Like Request
-# POST /api/posts/add_like/:postId/like
-
-# Headers:
-    
-    {
-      "Authorization": "Bearer <token>"
-    }
-
-# Add Like Response
-# 200 OK:
-    {
-      "status": "SUCCESS",
-      "message": "Liked successfully"
-    }
-
-# Remove Like Request
-# DELETE /api/posts/remove_like/:postId/unlike
-# Headers:
-
-    {
-      "Authorization": "Bearer <token>"
-    }
-
-# Remove Like Response
-# 200 OK:
-    {
-      "status": "SUCCESS",
-      "message": "Like removed successfully"
-    }
-
-
-
-# photo_url
-# Get /uploads/Posts_photo/name_photo -> post photo
-# Get /uploads/Profile_photo/name_photo -> users photo
-
-
-## Middleware for update and delete to check owner and and token
-
-# 1. verifyToken
-    - Ensures the user is authenticated by validating the token.
-# 2. verifyOwnership
-    - Ensures the user is the owner of the post being modified or deleted.
-# 3. multer
-    - Handles file uploads for the photo field.
-    
-    
-
-
-##### asyncWrapper: Handles async errors in route handlers.
-##### AppError: Custom error class for API errors.
-##### Utilities
-##### http_status: Defines success and failure status codes.
-
+- This project is licensed under the MIT License. See the LICENSE file for details.

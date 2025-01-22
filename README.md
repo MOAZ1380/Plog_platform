@@ -57,7 +57,7 @@ A full-stack blog post platform where users can create, share, and interact with
 ### Steps
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/your-username/blog-post-platform.git
+   git clone https://github.com/MOAZ1380/Plog_platform.git
    cd blog-post-platform
 
 2. **Install dependencies**:
